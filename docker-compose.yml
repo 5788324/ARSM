@@ -1,0 +1,18 @@
+services:
+  arsm:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount local media for import
+      - ${LIBRARY_ROOT:-./media}:/media:ro
+      # Persist SQLite database
+      - ./data:/app/prisma
+    environment:
+      - DATABASE_URL=file:/app/prisma/arsm.db
+      - AUTH_SECRET=${AUTH_SECRET:-change-me-in-production}
+      - AUTH_URL=${AUTH_URL:-http://localhost:3000}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
+      - LIBRARY_ROOT=/media
+    restart: unless-stopped

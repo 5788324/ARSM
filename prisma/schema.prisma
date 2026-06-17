@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ───────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  isAdmin      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  listeningHistory ListeningHistory[]
+  favorites        Favorite[]
+  importJobs        ImportJob[]
+  metadataJobs      MetadataJob[]
+
+  @@map("users")
+}
+
+// ─── Library Domain ─────────────────────────────────────
+
+model Work {
+  id            String   @id @default(cuid())
+  displayTitle  String
+  originalTitle String?
+  workCode      String?  // RJ code or similar
+  description   String?
+  coverPath     String?
+  releaseDate   String?  // ISO date string, may be partial
+  durationSec   Int?     // total duration in seconds
+  trackCount    Int      @default(0)
+  sourceSite    String?  // e.g. "dlsite", "asmr.one"
+  sourceUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  circleId      String?
+  circle        Circle?  @relation(fields: [circleId], references: [id])
+
+  tracks       Track[]
+  workTags     WorkTag[]
+  workVAs      WorkVoiceActor[]
+  workSources  WorkSource[]
+  favorites    Favorite[]
+  listeningHistory ListeningHistory[]
+  importJobs   ImportJob[]
+  metadataJobs MetadataJob[]
+
+  @@map("works")
+}
+
+model Track {
+  id          String   @id @default(cuid())
+  workId      String
+  trackNumber Int
+  title       String
+  durationSec Int?
+  mimeType    String?
+  bitrateKbps Int?
+  checksum    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  work       Work        @relation(fields: [workId], references: [id], onDelete: Cascade)
+  trackFiles TrackFile[]
+
+  @@map("tracks")
+}
+
+model TrackFile {
+  id             String   @id @default(cuid())
+  trackId        String
+  repositoryId   String
+  filePath       String   // relative path within repository
+  fileSize       Int?
+  isAvailable    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  track      Track               @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  repository StorageRepository   @relation(fields: [repositoryId], references: [id])
+
+  @@map("track_files")
+}
+
+model Circle {
+  id        String  @id @default(cuid())
+  name      String  @unique
+  works     Work[]
+
+  @@map("circles")
+}
+
+model VoiceActor {
+  id        String  @id @default(cuid())
+  name      String  @unique
+  workVAs   WorkVoiceActor[]
+
+  @@map("voice_actors")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  workTags  WorkTag[]
+
+  @@map("tags")
+}
+
+model WorkTag {
+  id     String @id @default(cuid())
+  workId String
+  tagId  String
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([workId, tagId])
+  @@map("work_tags")
+}
+
+model WorkVoiceActor {
+  id           String @id @default(cuid())
+  workId       String
+  voiceActorId String
+
+  work       Work       @relation(fields: [workId], references: [id], onDelete: Cascade)
+  voiceActor VoiceActor @relation(fields: [voiceActorId], references: [id], onDelete: Cascade)
+
+  @@unique([workId, voiceActorId])
+  @@map("work_voice_actors")
+}
+
+model WorkSource {
+  id          String   @id @default(cuid())
+  workId      String
+  sourceName  String   // provider name: "dlmanual", "asmrone"
+  sourceUrl   String
+  fetchedAt   DateTime @default(now())
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@map("work_sources")
+}
+
+// ─── Storage ────────────────────────────────────────────
+
+model StorageRepository {
+  id        String  @id @default(cuid())
+  name      String
+  type      String  // "local", "openlist", "webdav"
+  rootPath  String  // local path or base URL
+  config    String? // JSON string for extra config (auth, mount opts)
+  isEnabled Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  trackFiles TrackFile[]
+
+  @@map("storage_repositories")
+}
+
+// ─── User Data ──────────────────────────────────────────
+
+model ListeningHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  workId    String
+  trackId   String?
+  positionSec Int    @default(0) // resume position
+  listenedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work  Work  @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@map("listening_history")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  workId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workId])
+  @@map("favorites")
+}
+
+// ─── Jobs ───────────────────────────────────────────────
+
+model ImportJob {
+  id          String   @id @default(cuid())
+  userId      String
+  workId      String?
+  repositoryId String?
+  status      String   @default("pending") // pending, running, done, failed, review
+  totalFiles  Int      @default(0)
+  foundWorks  Int      @default(0)
+  foundTracks Int      @default(0)
+  errors      String?  // JSON array of error messages
+  createdAt   DateTime @default(now())
+  finishedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  work Work? @relation(fields: [workId], references: [id])
+
+  @@map("import_jobs")
+}
+
+model MetadataJob {
+  id          String   @id @default(cuid())
+  userId      String
+  workId      String?
+  queryType   String   // "url", "code", "title"
+  queryValue  String
+  provider    String   // metadata provider name
+  status      String   @default("pending") // pending, running, done, failed
+  resultJson  String?  // preview payload
+  appliedAt   DateTime?
+  createdAt   DateTime @default(now())
+  finishedAt  DateTime?
+
+  user User  @relation(fields: [userId], references: [id])
+  work Work? @relation(fields: [workId], references: [id])
+
+  @@map("metadata_jobs")
+}
