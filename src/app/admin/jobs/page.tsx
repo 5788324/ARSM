@@ -125,9 +125,22 @@ export default function JobsPage() {
                     </p>
                     {reviewCandidates.map((rc, i) => (
                       <div key={i} className="mt-2 rounded border border-amber-100 bg-white p-2 text-xs dark:border-amber-700 dark:bg-zinc-900">
-                        <p className="font-medium">{rc.folderName}</p>
-                        {rc.folderCode && <span className="text-zinc-500 mr-2">[{rc.folderCode}]</span>}
-                        <span className="text-zinc-400">{rc.trackCount} 首</span>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-medium">{rc.folderName}</span>
+                            {rc.folderCode && <span className="text-zinc-500 mr-2"> [{rc.folderCode}]</span>}
+                            <span className="text-zinc-400">{rc.trackCount} 首</span>
+                          </div>
+                          {rc.candidateWorks.length > 1 && (
+                            <button
+                              onClick={() => {
+                                const [target, ...sources] = rc.candidateWorks;
+                                handleMerge(target.id, sources.map((s) => s.id));
+                              }}
+                              className="rounded bg-amber-600 px-2 py-0.5 text-xs text-white hover:bg-amber-700"
+                            >合并候选作品</button>
+                          )}
+                        </div>
                         <p className="mt-1 text-zinc-500">候选匹配：</p>
                         {rc.candidateWorks.map((cw) => (
                           <div key={cw.id} className="ml-2 mt-0.5 flex items-center gap-2">

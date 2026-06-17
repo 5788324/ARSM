@@ -62,7 +62,7 @@ export default function RepositoriesPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to create');
+        throw new Error(data.error || '创建失败');
       }
 
       setShowForm(false);
@@ -72,7 +72,7 @@ export default function RepositoriesPage() {
       fetchRepos();
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : '未知错误');
     } finally {
       setSubmitting(false);
     }
@@ -90,12 +90,12 @@ export default function RepositoriesPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to delete');
+        throw new Error(data.error || '删除失败');
       }
 
       fetchRepos();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : '未知错误');
     }
   };
 
@@ -108,7 +108,7 @@ export default function RepositoriesPage() {
       });
       fetchRepos();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : '未知错误');
     }
   };
 
