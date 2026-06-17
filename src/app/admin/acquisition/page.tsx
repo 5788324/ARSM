@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface InspectResult {
   sourceId: string;
@@ -165,6 +166,11 @@ export default function AcquisitionPage() {
               <p className="text-xs text-zinc-500">总计</p>
             </div>
           </div>
+
+          <div className="mt-4 flex gap-2">
+            <ImportButton targetDir={`${targetDir}/${input.toUpperCase()}`} />
+          </div>
+
           {downloadResult.errors.length > 0 && (
             <details className="mt-3">
               <summary className="cursor-pointer text-sm text-red-500">错误（{downloadResult.errors.length}）</summary>
@@ -175,6 +181,42 @@ export default function AcquisitionPage() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function ImportButton({ targetDir }: { targetDir: string }) {
+  const router = useRouter();
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState('');
+
+  const handleImport = async () => {
+    setImporting(true);
+    setImportMsg('');
+    try {
+      const res = await fetch('/api/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rootPath: targetDir }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '导入失败');
+      setImportMsg(`✅ 导入完成：${data.foundWorks} 个作品，${data.foundTracks} 首曲目`);
+      router.refresh();
+    } catch (err) {
+      setImportMsg(`❌ ${err instanceof Error ? err.message : '导入失败'}`);
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleImport} disabled={importing}
+        className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800 disabled:opacity-50">
+        {importing ? '导入中...' : '📦 导入到 ARSM'}
+      </button>
+      {importMsg && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{importMsg}</p>}
     </div>
   );
 }
