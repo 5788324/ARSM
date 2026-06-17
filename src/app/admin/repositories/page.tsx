@@ -141,7 +141,7 @@ export default function RepositoriesPage() {
           <h2 className="font-semibold">新建仓库</h2>
           <div className="mt-4 space-y-3">
             <div>
-              <label className="block text-sm font-medium">Name</label>
+              <label className="block text-sm font-medium">名称</label>
               <input
                 type="text"
                 value={formName}
@@ -151,13 +151,13 @@ export default function RepositoriesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Type</label>
+              <label className="block text-sm font-medium">类型</label>
               <select
                 value={formType}
                 onChange={(e) => setFormType(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
               >
-                <option value="local">Local Filesystem</option>
+                <option value="local">本地文件系统</option>
                 <option value="openlist">OpenList</option>
                 <option value="webdav">WebDAV</option>
               </select>

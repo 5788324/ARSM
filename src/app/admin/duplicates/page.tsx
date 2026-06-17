@@ -57,10 +57,10 @@ export default function DuplicatesPage() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Merge failed');
 
-      setMessage(`Merged ${result.mergedSources} work(s): ${result.mergedTracks} tracks, ${result.mergedTags} tags.`);
+      setMessage(`合并了 ${result.mergedSources} 个作品：${result.mergedTracks} 首曲目，${result.mergedTags} 个标签。`);
       fetchData();
     } catch (err) {
-      setMessage(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setMessage(`错误：${err instanceof Error ? err.message : '未知错误'}`);
     } finally {
       setMerging(null);
     }
@@ -69,21 +69,19 @@ export default function DuplicatesPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <p className="text-zinc-500">Scanning for duplicates...</p>
+        <p className="text-zinc-500">正在扫描重复项...</p>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-bold">Duplicate Review</h1>
-      <p className="mt-1 text-sm text-zinc-500">
-        Works that may be duplicates — same code or very similar titles.
-      </p>
+      <h1 className="text-2xl font-bold">重复审查</h1>
+      <p className="mt-1 text-sm text-zinc-500">可能重复的作品 — 相同编号或高度相似标题。</p>
 
       {message && (
         <div className={`mt-4 rounded-lg p-3 text-sm ${
-          message.startsWith('Error')
+          message.startsWith('错误')
             ? 'border border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400'
             : 'border border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400'
         }`}>
