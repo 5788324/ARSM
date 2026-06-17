@@ -48,8 +48,10 @@ export async function POST(req: NextRequest) {
         metadata = await provider.fetchByCode(queryValue);
         break;
       case 'title':
-        metadata = await provider.fetchByTitle(queryValue);
-        break;
+        return NextResponse.json(
+          { error: 'Title search is not yet supported. Use URL or work code instead.' },
+          { status: 400 },
+        );
       default:
         throw new Error(`Unsupported query type: ${queryType}`);
     }

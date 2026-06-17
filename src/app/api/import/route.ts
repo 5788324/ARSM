@@ -101,13 +101,68 @@ export async function POST(req: NextRequest) {
     // Import each work group
     let foundWorks = 0;
     let foundTracks = 0;
+    let reviewCount = 0;
     const importErrors: string[] = [];
+    const reviewCandidates: Record<string, unknown>[] = [];
 
     for (const group of result.workGroups) {
       try {
-        // Find or create circle (from folder structure heuristics)
+        // Extract potential work code from folder name (e.g., "RJ123456 Work Title")
+        const codeMatch = group.folderName.match(/\b(RJ|VJ|BJ)\d{4,}\b/i);
+        const folderCode = codeMatch ? codeMatch[0].toUpperCase() : null;
+
         const circleName = group.folderPath.split('/')[0] || null;
 
+        // --- Duplicate detection ---
+        const duplicateCandidates: { id: string; displayTitle: string; workCode?: string | null }[] = [];
+
+        // Check by work code
+        if (folderCode) {
+          const codeMatches = await prisma.work.findMany({
+            where: { workCode: folderCode },
+            select: { id: true, displayTitle: true, workCode: true },
+          });
+          duplicateCandidates.push(...codeMatches);
+        }
+
+        // Check by normalized title + same circle
+        if (duplicateCandidates.length === 0) {
+          const titleNorm = group.folderName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 30);
+          const titleMatches = await prisma.work.findMany({
+            where: {
+              displayTitle: { contains: group.folderName.substring(0, 15) },
+            },
+            select: { id: true, displayTitle: true, workCode: true },
+            take: 5,
+          });
+          // Filter for strong similarity
+          for (const m of titleMatches) {
+            const mNorm = m.displayTitle.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 30);
+            if (mNorm === titleNorm || mNorm.includes(titleNorm) || titleNorm.includes(mNorm)) {
+              duplicateCandidates.push(m);
+            }
+          }
+          // Deduplicate
+        }
+
+        // If duplicates found, queue for review instead of auto-creating
+        if (duplicateCandidates.length > 0) {
+          reviewCount++;
+          reviewCandidates.push({
+            folderName: group.folderName,
+            folderCode,
+            trackCount: group.tracks.length,
+            candidateWorks: duplicateCandidates.map((d) => ({
+              id: d.id,
+              title: d.displayTitle,
+              code: d.workCode,
+            })),
+          });
+          continue; // Skip creating
+        }
+
+        // No duplicates — create work
+        // Find or create circle
         let circleId: string | null = null;
         if (circleName) {
           const circle = await prisma.circle.upsert({
@@ -123,6 +178,7 @@ export async function POST(req: NextRequest) {
           data: {
             displayTitle: group.folderName,
             originalTitle: group.folderName,
+            workCode: folderCode,
             coverPath: group.coverPath || null,
             circleId,
             trackCount: group.tracks.length,
@@ -188,10 +244,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Update job status
+    const finalStatus = reviewCount > 0 ? 'review' : (importErrors.length > 0 ? 'done' : 'done');
+
     await prisma.importJob.update({
       where: { id: job.id },
       data: {
-        status: importErrors.length > 0 ? 'done' : 'done',
+        status: finalStatus,
         totalFiles: result.totalFiles,
         foundWorks,
         foundTracks,
@@ -202,12 +260,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       jobId: job.id,
-      status: 'done',
+      status: finalStatus,
       foundWorks,
       foundTracks,
+      reviewCount,
       totalFiles: result.totalFiles,
       skippedFiles: result.skippedFiles.length,
       errors: importErrors,
+      reviewCandidates: reviewCandidates.length > 0 ? reviewCandidates : undefined,
     });
   } catch (err) {
     await prisma.importJob.update({

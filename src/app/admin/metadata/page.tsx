@@ -88,7 +88,6 @@ export default function MetadataPage() {
           >
             <option value="url">URL</option>
             <option value="code">Work Code (e.g., RJ123456)</option>
-            <option value="title">Title</option>
           </select>
         </div>
 

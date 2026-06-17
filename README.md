@@ -11,7 +11,7 @@ built for a single owner or small trusted household.
 - **Auth**: NextAuth v5 (Credentials + JWT sessions)
 - **Styling**: Tailwind CSS 4
 - **Media**: ffmpeg/ffprobe for metadata extraction, HTML5 audio playback
-- **Storage**: Local, OpenList, WebDAV (pluggable RepositoryAdapter pattern)
+- **OpenList/WebDAV**: Experimental — adapter interface ready, needs real-environment validation
 - **Testing**: Vitest (9 tests)
 - **Deploy**: Docker + docker compose
 
@@ -86,7 +86,7 @@ prisma/
 ### Admin
 - Import: scan local folders, preview results, monitor jobs
 - Metadata: fetch from dlsite/asmr.one by URL, code, or title
-- Repositories: manage local/OpenList/WebDAV backends, health checks
+- Repositories: manage local/OpenList/WebDAV backends (OpenList/WebDAV experimental)
 - Duplicates: detect by work code or similar titles
 - Jobs: monitor import/metadata job history
 - Audit: check file availability across repositories
@@ -94,7 +94,7 @@ prisma/
 ### Advanced
 - RepositoryAdapter: pluggable storage (local → OpenList → WebDAV)
 - MetadataProvider: pluggable metadata sources
-- Remote streaming: proxy OpenList/WebDAV media
+- Remote streaming: experimental OpenList/WebDAV media proxy
 - Duplicate detection: code-based + title-similarity
 - Docker: single-command production deployment
 
