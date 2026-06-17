@@ -50,27 +50,27 @@ export default function ImportPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-bold">Import Media</h1>
+      <h1 className="text-2xl font-bold">导入媒体</h1>
       <p className="mt-1 text-sm text-zinc-500">
-        Scan a local folder and import audio works into your library.
+        扫描本地文件夹并将音频作品导入你的图书馆。
       </p>
 
       {/* Input */}
       <div className="mt-6 space-y-4">
         <div>
           <label htmlFor="rootPath" className="block text-sm font-medium">
-            Folder Path
+            文件夹路径
           </label>
           <input
             id="rootPath"
             type="text"
             value={rootPath}
             onChange={(e) => setRootPath(e.target.value)}
-            placeholder="e.g. G:/Media/ASMR"
+            placeholder="例如 G:/Media/ASMR"
             className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800"
           />
           <p className="mt-1 text-xs text-zinc-400">
-            Leave empty to use the default library root from .env
+            留空则使用 .env 中配置的默认库根目录
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default function ImportPage() {
           disabled={loading}
           className="rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
         >
-          {loading ? 'Scanning & Importing...' : 'Start Import'}
+          {loading ? '正在扫描导入...' : '开始导入'}
         </button>
       </div>
 
@@ -93,22 +93,22 @@ export default function ImportPage() {
       {/* Result */}
       {result && (
         <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-6 dark:border-green-800 dark:bg-green-950">
-          <h2 className="font-semibold text-green-800 dark:text-green-300">Import Complete</h2>
+          <h2 className="font-semibold text-green-800 dark:text-green-300">导入完成</h2>
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-zinc-500">Works found:</span>{' '}
+              <span className="text-zinc-500">发现作品：</span>{' '}
               <span className="font-semibold">{result.foundWorks}</span>
             </div>
             <div>
-              <span className="text-zinc-500">Tracks imported:</span>{' '}
+              <span className="text-zinc-500">导入曲目：</span>{' '}
               <span className="font-semibold">{result.foundTracks}</span>
             </div>
             <div>
-              <span className="text-zinc-500">Files scanned:</span>{' '}
+              <span className="text-zinc-500">扫描文件：</span>{' '}
               <span className="font-semibold">{result.totalFiles}</span>
             </div>
             <div>
-              <span className="text-zinc-500">Skipped:</span>{' '}
+              <span className="text-zinc-500">跳过：</span>{' '}
               <span className="font-semibold">{result.skippedFiles}</span>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function ImportPage() {
           {result.errors && result.errors.length > 0 && (
             <div className="mt-4">
               <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                Warnings ({result.errors.length})
+                警告 ({result.errors.length})
               </p>
               <ul className="mt-1 list-inside list-disc text-xs text-amber-600 dark:text-amber-500">
                 {result.errors.slice(0, 10).map((e, i) => (
@@ -133,7 +133,7 @@ export default function ImportPage() {
             onClick={() => router.push('/works')}
             className="mt-4 text-sm font-medium text-green-700 hover:underline dark:text-green-400"
           >
-            View Library →
+            查看作品库 →
           </button>
         </div>
       )}

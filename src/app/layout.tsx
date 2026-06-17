@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ARSM — Private Audio Library',
-  description: 'A private ASMR and audio library',
+  title: 'ARSM — 私人音频图书馆',
+  description: '私人 ASMR 与音频图书馆',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

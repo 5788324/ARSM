@@ -19,11 +19,11 @@ export default async function WorksPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Library</h1>
+        <h1 className="text-2xl font-bold">作品库</h1>
         <div className="flex gap-2">
           <input
             type="search"
-            placeholder="Search works..."
+            placeholder="搜索作品..."
             className="rounded-lg border border-zinc-300 px-4 py-2 text-sm focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800"
           />
         </div>
@@ -31,12 +31,12 @@ export default async function WorksPage() {
 
       {works.length === 0 ? (
         <div className="mt-16 text-center">
-          <p className="text-lg text-zinc-500">No works imported yet.</p>
+          <p className="text-lg text-zinc-500">还没有导入任何作品。</p>
           <Link
             href="/admin/import"
             className="mt-4 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
           >
-            Import your first work
+            导入你的第一个作品
           </Link>
         </div>
       ) : (
@@ -83,7 +83,7 @@ export default async function WorksPage() {
                   )}
                 </div>
                 <p className="mt-1 text-xs text-zinc-400">
-                  {work._count.tracks} track{work._count.tracks !== 1 ? 's' : ''}
+                  {work._count.tracks} 首曲目
                 </p>
               </div>
             </Link>

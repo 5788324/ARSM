@@ -39,20 +39,19 @@ export default async function ContinueListeningPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Continue Listening</h1>
-        <Link href="/works" className="text-sm text-zinc-500 hover:text-zinc-700">
-          ← Library
+        <h1 className="text-2xl font-bold">继续收听</h1>
+        <Link href="/works" className="text-sm text-zinc-500 hover:text-zinc-700">← 作品库
         </Link>
       </div>
 
       {history.length === 0 ? (
         <div className="mt-16 text-center">
-          <p className="text-lg text-zinc-500">No listening history yet.</p>
+          <p className="text-lg text-zinc-500">还没有收听记录。</p>
           <Link
             href="/works"
             className="mt-4 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
           >
-            Browse Library
+            浏览作品库
           </Link>
         </div>
       ) : (
@@ -86,7 +85,7 @@ export default async function ContinueListeningPage() {
                   <div className="mt-0.5 flex items-center gap-2 text-xs text-zinc-500">
                     {h.work.circle && <span>{h.work.circle.name}</span>}
                     <span>·</span>
-                    <span>{h.work._count.tracks} tracks</span>
+                    {h.work._count.tracks} 首
                   </div>
                   {/* Progress bar */}
                   <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
@@ -107,7 +106,7 @@ export default async function ContinueListeningPage() {
                 {/* Resume button */}
                 <div className="flex-shrink-0">
                   <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium dark:bg-zinc-800">
-                    Resume
+                  续听
                   </span>
                 </div>
               </Link>

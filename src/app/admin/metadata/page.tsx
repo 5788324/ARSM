@@ -59,15 +59,15 @@ export default function MetadataPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-bold">Fetch Metadata</h1>
+      <h1 className="text-2xl font-bold">获取元数据</h1>
       <p className="mt-1 text-sm text-zinc-500">
-        Look up work metadata from external sources by URL, RJ code, or title.
+        从外部来源获取作品元数据（URL 或 RJ 编号）。
       </p>
 
       <div className="mt-6 space-y-4">
         {/* Provider */}
         <div>
-          <label className="block text-sm font-medium">Provider</label>
+          <label className="block text-sm font-medium">来源</label>
           <select
             value={provider}
             onChange={(e) => setProvider(e.target.value)}
@@ -80,14 +80,14 @@ export default function MetadataPage() {
 
         {/* Query type */}
         <div>
-          <label className="block text-sm font-medium">Query Type</label>
+          <label className="block text-sm font-medium">查询方式</label>
           <select
             value={queryType}
             onChange={(e) => setQueryType(e.target.value)}
             className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
           >
             <option value="url">URL</option>
-            <option value="code">Work Code (e.g., RJ123456)</option>
+            <option value="code">作品编号 (如 RJ123456)</option>
           </select>
         </div>
 
@@ -98,7 +98,7 @@ export default function MetadataPage() {
               ? 'URL'
               : queryType === 'code'
                 ? 'Work Code'
-                : 'Search Title'}
+                : '搜索标题'}
           </label>
           <input
             type="text"
@@ -109,7 +109,7 @@ export default function MetadataPage() {
                 ? 'https://www.dlsite.com/...'
                 : queryType === 'code'
                   ? 'RJ123456'
-                  : 'Work title...'
+                  : '作品标题...'
             }
             className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800"
           />
@@ -120,7 +120,7 @@ export default function MetadataPage() {
           disabled={loading || !queryValue}
           className="rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
         >
-          {loading ? 'Fetching...' : 'Fetch Metadata'}
+          {loading ? '正在获取...' : '获取元数据'}
         </button>
       </div>
 
@@ -151,13 +151,13 @@ export default function MetadataPage() {
             </p>
             {result.metadata.originalTitle && (
               <p>
-                <span className="text-zinc-500">Original:</span>{' '}
+                <span className="text-zinc-500">原标题：</span>{' '}
                 {result.metadata.originalTitle}
               </p>
             )}
             {result.metadata.workCode && (
               <p>
-                <span className="text-zinc-500">Code:</span>{' '}
+                <span className="text-zinc-500">编号：</span>{' '}
                 <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">
                   {result.metadata.workCode}
                 </code>
@@ -165,13 +165,13 @@ export default function MetadataPage() {
             )}
             {result.metadata.circleName && (
               <p>
-                <span className="text-zinc-500">Circle:</span>{' '}
+                <span className="text-zinc-500">社团：</span>{' '}
                 {result.metadata.circleName}
               </p>
             )}
             {result.metadata.releaseDate && (
               <p>
-                <span className="text-zinc-500">Released:</span>{' '}
+                <span className="text-zinc-500">发布日期：</span>{' '}
                 {result.metadata.releaseDate}
               </p>
             )}
@@ -179,7 +179,7 @@ export default function MetadataPage() {
 
           {result.metadata.tags.length > 0 && (
             <div className="mt-3">
-              <p className="text-xs text-zinc-500">Tags:</p>
+              <p className="text-xs text-zinc-500">标签：</p>
               <div className="mt-1 flex flex-wrap gap-1">
                 {result.metadata.tags.map((t) => (
                   <span
@@ -196,7 +196,7 @@ export default function MetadataPage() {
           {result.metadata.tracks.length > 0 && (
             <div className="mt-3">
               <p className="text-xs text-zinc-500">
-                Tracks ({result.metadata.tracks.length}):
+                曲目 ({result.metadata.tracks.length}):
               </p>
               <ol className="mt-1 list-inside list-decimal text-xs text-zinc-600 dark:text-zinc-400">
                 {result.metadata.tracks.map((t) => (
@@ -211,7 +211,7 @@ export default function MetadataPage() {
 
           {result.metadata.description && (
             <div className="mt-3">
-              <p className="text-xs text-zinc-500">Description:</p>
+              <p className="text-xs text-zinc-500">简介：</p>
               <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-6">
                 {result.metadata.description}
               </p>
@@ -219,7 +219,7 @@ export default function MetadataPage() {
           )}
 
           <p className="mt-3 text-xs text-zinc-400">
-            Source:{' '}
+            来源：{' '}
             <a
               href={result.metadata.sourceUrl}
               target="_blank"

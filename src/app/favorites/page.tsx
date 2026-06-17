@@ -23,20 +23,19 @@ export default async function FavoritesPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Favorites</h1>
-        <Link href="/works" className="text-sm text-zinc-500 hover:text-zinc-700">
-          ← Library
+        <h1 className="text-2xl font-bold">收藏</h1>
+        <Link href="/works" className="text-sm text-zinc-500 hover:text-zinc-700">← 作品库
         </Link>
       </div>
 
       {favorites.length === 0 ? (
         <div className="mt-16 text-center">
-          <p className="text-lg text-zinc-500">No favorites yet.</p>
+          <p className="text-lg text-zinc-500">还没有收藏任何作品。</p>
           <Link
             href="/works"
             className="mt-4 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
           >
-            Browse Library
+            浏览作品库
           </Link>
         </div>
       ) : (

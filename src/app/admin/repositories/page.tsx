@@ -116,16 +116,16 @@ export default function RepositoriesPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Repositories</h1>
+          <h1 className="text-2xl font-bold">仓库管理</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Configure local and remote storage backends.
+            配置本地和远程存储后端。
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
         >
-          {showForm ? 'Cancel' : 'Add Repository'}
+          {showForm ? '取消' : '添加仓库'}
         </button>
       </div>
 
@@ -137,8 +137,8 @@ export default function RepositoriesPage() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="font-semibold">New Repository</h2>
+        <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="font-semibold">新建仓库</h2>
           <div className="mt-4 space-y-3">
             <div>
               <label className="block text-sm font-medium">Name</label>
@@ -146,7 +146,7 @@ export default function RepositoriesPage() {
                 type="text"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="My Library"
+                placeholder="我的图书馆"
                 className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
               />
             </div>
@@ -164,7 +164,7 @@ export default function RepositoriesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium">
-                {formType === 'local' ? 'Root Path' : 'Base URL'}
+                {formType === 'local' ? '根路径' : '基础 URL'}
               </label>
               <input
                 type="text"
@@ -181,13 +181,13 @@ export default function RepositoriesPage() {
             {formType !== 'local' && (
               <div>
                 <label className="block text-sm font-medium">
-                  Auth Token (optional)
+                  认证令牌（可选）
                 </label>
                 <input
                   type="password"
                   value={formToken}
                   onChange={(e) => setFormToken(e.target.value)}
-                  placeholder="Bearer token or password"
+                  placeholder="Bearer 令牌或密码"
                   className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
                 />
               </div>
@@ -197,7 +197,7 @@ export default function RepositoriesPage() {
               disabled={submitting || !formName || !formPath}
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
             >
-              {submitting ? 'Creating...' : 'Create'}
+              {submitting ? '创建中...' : 'Create'}
             </button>
           </div>
         </div>
@@ -205,12 +205,12 @@ export default function RepositoriesPage() {
 
       {/* Repository List */}
       {loading ? (
-        <p className="mt-6 text-zinc-500">Loading...</p>
+        <p className="mt-6 text-zinc-500">加载中...</p>
       ) : (
         <div className="mt-6 space-y-3">
           {repos.length === 0 ? (
             <p className="text-sm text-zinc-500">
-              No repositories configured. Add one to start importing.
+              还没有配置仓库。添加一个以开始导入。
             </p>
           ) : (
             repos.map((repo) => (
