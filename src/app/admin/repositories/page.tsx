@@ -197,7 +197,7 @@ export default function RepositoriesPage() {
               disabled={submitting || !formName || !formPath}
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
             >
-              {submitting ? '创建中...' : 'Create'}
+              {submitting ? '创建中...' : '创建'}
             </button>
           </div>
         </div>
@@ -237,13 +237,13 @@ export default function RepositoriesPage() {
                         className={`h-2 w-2 rounded-full ${
                           repo.healthy ? 'bg-green-500' : 'bg-red-500'
                         }`}
-                        title={repo.healthy ? 'Healthy' : 'Unreachable'}
+                        title={repo.healthy ? '正常' : '不可达'}
                       />
                     )}
                   </div>
                   <p className="mt-0.5 text-xs text-zinc-500 font-mono">{repo.rootPath}</p>
                   <p className="mt-0.5 text-xs text-zinc-400">
-                    Added {new Date(repo.createdAt).toLocaleDateString()}
+                    添加于 {new Date(repo.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -255,13 +255,13 @@ export default function RepositoriesPage() {
                         : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800'
                     }`}
                   >
-                    {repo.isEnabled ? 'Enabled' : 'Disabled'}
+                    {repo.isEnabled ? '已启用' : '已禁用'}
                   </button>
                   <button
                     onClick={() => handleDelete(repo.id)}
                     className="rounded px-3 py-1 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
                   >
-                    Delete
+                    删除
                   </button>
                 </div>
               </div>

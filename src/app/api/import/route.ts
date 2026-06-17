@@ -8,6 +8,27 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
+/** Longest common prefix length between two strings */
+function longestCommonPrefix(a: string, b: string): string {
+  let i = 0;
+  const len = Math.min(a.length, b.length);
+  while (i < len && a[i] === b[i]) i++;
+  return a.substring(0, i);
+}
+
+/** Ratio of characters from shorter string that appear in longer string */
+function charOverlapRatio(a: string, b: string): number {
+  const shorter = a.length < b.length ? a : b;
+  const longer = a.length < b.length ? b : a;
+  if (shorter.length === 0) return 0;
+  const longerSet = new Set(longer);
+  let overlap = 0;
+  for (const ch of shorter) {
+    if (longerSet.has(ch)) overlap++;
+  }
+  return overlap / shorter.length;
+}
+
 /**
  * Run ffprobe on a file and return JSON metadata.
  */
@@ -125,24 +146,25 @@ export async function POST(req: NextRequest) {
           duplicateCandidates.push(...codeMatches);
         }
 
-        // Check by normalized title + same circle
+        // Check by normalized title similarity (CJK-aware)
         if (duplicateCandidates.length === 0) {
-          const titleNorm = group.folderName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 30);
+          // Use a sliding substring approach instead of stripping non-ASCII
+          const titleKey = group.folderName.substring(0, 20);
           const titleMatches = await prisma.work.findMany({
             where: {
-              displayTitle: { contains: group.folderName.substring(0, 15) },
+              displayTitle: { contains: titleKey },
             },
             select: { id: true, displayTitle: true, workCode: true },
             take: 5,
           });
-          // Filter for strong similarity
+          // Strong match: shared prefix >= 10 chars OR >70% character overlap
           for (const m of titleMatches) {
-            const mNorm = m.displayTitle.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 30);
-            if (mNorm === titleNorm || mNorm.includes(titleNorm) || titleNorm.includes(mNorm)) {
+            const commonPrefix = longestCommonPrefix(group.folderName, m.displayTitle);
+            const overlapRatio = charOverlapRatio(group.folderName, m.displayTitle);
+            if (commonPrefix.length >= 10 || overlapRatio > 0.7) {
               duplicateCandidates.push(m);
             }
           }
-          // Deduplicate
         }
 
         // If duplicates found, queue for review instead of auto-creating
@@ -253,6 +275,7 @@ export async function POST(req: NextRequest) {
         totalFiles: result.totalFiles,
         foundWorks,
         foundTracks,
+        reviewPayload: reviewCandidates.length > 0 ? JSON.stringify(reviewCandidates) : null,
         errors: importErrors.length > 0 ? JSON.stringify(importErrors) : null,
         finishedAt: new Date(),
       },

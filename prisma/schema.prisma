@@ -207,6 +207,7 @@ model ImportJob {
   foundWorks  Int      @default(0)
   foundTracks Int      @default(0)
   errors      String?  // JSON array of error messages
+  reviewPayload String? // JSON: persisted review candidates for duplicate resolution
   createdAt   DateTime @default(now())
   finishedAt  DateTime?
 

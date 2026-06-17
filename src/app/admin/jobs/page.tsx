@@ -44,7 +44,7 @@ export default function JobsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <p className="text-zinc-500">Loading...</p>
+        <p className="text-zinc-500">加载中...</p>
       </div>
     );
   }
@@ -52,7 +52,7 @@ export default function JobsPage() {
   if (!data) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <p className="text-red-500">Failed to load jobs.</p>
+        <p className="text-red-500">加载任务失败。</p>
       </div>
     );
   }
@@ -78,9 +78,9 @@ export default function JobsPage() {
       </div>
 
       {/* Import Jobs */}
-      <h2 className="mt-8 text-lg font-semibold">Import Jobs</h2>
+      <h2 className="mt-8 text-lg font-semibold">导入任务</h2>
       {data.importJobs.length === 0 ? (
-        <p className="mt-2 text-sm text-zinc-500">No import jobs yet.</p>
+        <p className="mt-2 text-sm text-zinc-500">还没有导入任务。</p>
       ) : (
         <div className="mt-3 space-y-3">
           {data.importJobs.map((job) => (
@@ -124,9 +124,9 @@ export default function JobsPage() {
       )}
 
       {/* Metadata Jobs */}
-      <h2 className="mt-8 text-lg font-semibold">Metadata Jobs</h2>
+      <h2 className="mt-8 text-lg font-semibold">元数据任务</h2>
       {data.metadataJobs.length === 0 ? (
-        <p className="mt-2 text-sm text-zinc-500">No metadata jobs yet.</p>
+        <p className="mt-2 text-sm text-zinc-500">还没有元数据任务。</p>
       ) : (
         <div className="mt-3 space-y-3">
           {data.metadataJobs.map((job) => (
@@ -156,7 +156,7 @@ export default function JobsPage() {
               <p className="mt-1 text-xs text-zinc-400">{new Date(job.createdAt).toLocaleString()}</p>
               {job.resultJson && job.status === 'done' && (
                 <details className="mt-2">
-                  <summary className="cursor-pointer text-xs text-zinc-500">Preview result</summary>
+                  <summary className="cursor-pointer text-xs text-zinc-500">预览结果</summary>
                   <pre className="mt-1 max-h-48 overflow-auto rounded bg-zinc-50 p-2 text-xs dark:bg-zinc-800">
                     {JSON.stringify(JSON.parse(job.resultJson), null, 2)}
                   </pre>

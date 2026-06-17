@@ -77,7 +77,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Move favorites
+    // Move favorites — delete source favorites that would conflict
+    const existingTargetFavs = await prisma.favorite.findMany({
+      where: { workId: targetId },
+      select: { userId: true },
+    });
+    const targetUserIds = new Set(existingTargetFavs.map((f) => f.userId));
+
+    // Delete source favorites for users who already favorited the target
+    if (targetUserIds.size > 0) {
+      await prisma.favorite.deleteMany({
+        where: { workId: sourceId, userId: { in: Array.from(targetUserIds) } },
+      });
+    }
+    // Move remaining source favorites to target
     await prisma.favorite.updateMany({
       where: { workId: sourceId },
       data: { workId: targetId },
