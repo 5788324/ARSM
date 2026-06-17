@@ -1,0 +1,111 @@
+{
+  "provider": "asmr.one",
+  "workId": "01538000",
+  "workCode": "RJ01538000",
+  "pageUrl": "https://www.asmr.one/work/RJ01538000",
+  "apiBase": "https://api.asmr-200.com",
+  "observedApiRequests": [
+    "https://api.asmr-200.com/api/health",
+    "https://api.asmr-200.com/api/recommender/item-neighbors",
+    "https://api.asmr-200.com/api/workInfo/01538000",
+    "https://api.asmr-200.com/api/tracks/01538000?v=2",
+    "https://api.asmr-200.com/api/auth/me",
+    "https://api.asmr-200.com/api/playlist/get-playlist-metadata?id=c2acb7ed-5ff0-4a04-91e0-717eb122f0bb",
+    "https://api.asmr-200.com/api/work/01538000"
+  ],
+  "downloadFlow": {
+    "step1": "作品页点击“下载”",
+    "step2": "站内弹出“创建下载任务”窗口",
+    "step3": "弹窗内展示文件类型和完整文件树",
+    "step4": "弹窗再次点击“下载”",
+    "step5": "浏览器弹出目录选择窗口，而不是普通单文件保存框"
+  },
+  "inference": {
+    "singleZipLinkLikely": false,
+    "browserDirectoryWriteLikely": true,
+    "fileTreeLikelyDerivedFromTracks": true,
+    "tokenizedMediaRequestsLikely": true
+  },
+  "fileTypes": [
+    "mp3",
+    "wav",
+    "jpg",
+    "txt"
+  ],
+  "selectedSummary": {
+    "selectedCount": 36,
+    "selectedSizeText": "7.25 GB"
+  },
+  "treeSample": {
+    "root": "RJ01538000",
+    "children": [
+      {
+        "path": "RJ01538000/MP3/SEあり",
+        "files": [
+          "01.修道院の秘密とケモ耳シスターたち～Ｗ耳舐め手コキ～.mp3",
+          "02.お清め奉仕～Ｗチンカスお掃除～.mp3",
+          "03.発情聖女のおしゃぶり奉仕～Ｗフェラ＆ごっくん～.mp3",
+          "04.純潔を守って悶絶快楽～発情おマンコＷ素股～.mp3",
+          "05.ほんわか犬耳聖女・堕落の懺悔室～アンジェイラマチオ＆聖水ごっくん～.mp3",
+          "06.ツンデレメス猫シスターの陥落～サーニャアナル舐め手コキ～.mp3",
+          "07.アンジェとサーニャは御主人様のものです…♡～処女喪失Ｗ生ハメ：サーニャ編～.mp3",
+          "08.性処理シスター完成～処女喪失Ｗ生ハメ：アンジェ編～.mp3"
+        ]
+      },
+      {
+        "path": "RJ01538000/MP3/SEなし",
+        "files": [
+          "01.修道院の秘密とケモ耳シスターたち～Ｗ耳舐め手コキ～(SEなし).mp3",
+          "02.お清め奉仕～Ｗチンカスお掃除～(SEなし).mp3",
+          "03.発情聖女のおしゃぶり奉仕～Ｗフェラ＆ごっくん～(SEなし).mp3",
+          "04.純潔を守って悶絶快楽～発情おマンコＷ素股～(SEなし).mp3",
+          "05.ほんわか犬耳聖女・堕落の懺悔室～アンジェイラマチオ＆聖水ごっくん～(SEなし).mp3",
+          "06.ツンデレメス猫シスターの陥落～サーニャアナル舐め手コキ～(SEなし).mp3",
+          "07.アンジェとサーニャは御主人様のものです…♡～処女喪失Ｗ生ハメ：サーニャ編～(SEなし).mp3",
+          "08.性処理シスター完成～処女喪失Ｗ生ハメ：アンジェ編～(SEなし).mp3"
+        ]
+      },
+      {
+        "path": "RJ01538000/WAV/SEあり",
+        "files": [
+          "01.修道院の秘密とケモ耳シスターたち～Ｗ耳舐め手コキ～.wav",
+          "02.お清め奉仕～Ｗチンカスお掃除～.wav",
+          "03.発情聖女のおしゃぶり奉仕～Ｗフェラ＆ごっくん～.wav",
+          "04.純潔を守って悶絶快楽～発情おマンコＷ素股～.wav",
+          "05.ほんわか犬耳聖女・堕落の懺悔室～アンジェイラマチオ＆聖水ごっくん～.wav",
+          "06.ツンデレメス猫シスターの陥落～サーニャアナル舐め手コキ～.wav",
+          "07.アンジェとサーニャは御主人様のものです…♡～処女喪失Ｗ生ハメ：サーニャ編～.wav",
+          "08.性処理シスター完成～処女喪失Ｗ生ハメ：アンジェ編～.wav"
+        ]
+      },
+      {
+        "path": "RJ01538000/WAV/SEなし",
+        "files": [
+          "01.修道院の秘密とケモ耳シスターたち～Ｗ耳舐め手コキ～(SEなし).wav",
+          "02.お清め奉仕～Ｗチンカスお掃除～(SEなし).wav",
+          "03.発情聖女のおしゃぶり奉仕～Ｗフェラ＆ごっくん～(SEなし).wav",
+          "04.純潔を守って悶絶快楽～発情おマンコＷ素股～(SEなし).wav",
+          "05.ほんわか犬耳聖女・堕落の懺悔室～アンジェイラマチオ＆聖水ごっくん～(SEなし).wav",
+          "06.ツンデレメス猫シスターの陥落～サーニャアナル舐め手コキ～(SEなし).wav",
+          "07.アンジェとサーニャは御主人様のものです…♡～処女喪失Ｗ生ハメ：サーニャ編～(SEなし).wav",
+          "08.性処理シスター完成～処女喪失Ｗ生ハメ：アンジェ編～(SEなし).wav"
+        ]
+      },
+      {
+        "path": "RJ01538000/特典/収録後フリートーク",
+        "files": [
+          "柚木つばめ様フリートーク.wav",
+          "涼花みなせ様フリートーク.wav"
+        ]
+      },
+      {
+        "path": "RJ01538000",
+        "files": [
+          "高画質パッケージ用イラスト.jpg",
+          "README.txt"
+        ]
+      }
+    ]
+  },
+  "status": "resource-enumeration-proven"
+}
