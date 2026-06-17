@@ -62,7 +62,7 @@ export default async function HomePage() {
                   return (
                     <Link key={h.id} href={`/works/${h.work.id}`} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 transition hover:shadow-sm dark:border-zinc-800">
                       <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                        {h.work.coverPath ? <img src={h.work.coverPath} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-zinc-300">♪</div>}
+                        {h.work.coverPath ? <img src={`/api/covers/${h.work.id}`} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-zinc-300">♪</div>}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{h.work.displayTitle}</p>

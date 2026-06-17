@@ -51,7 +51,7 @@ export default async function WorksPage() {
               <div className="aspect-square bg-zinc-100 dark:bg-zinc-800">
                 {work.coverPath ? (
                   <img
-                    src={work.coverPath}
+                    src={`/api/covers/${work.id}`}
                     alt={work.displayTitle}
                     className="h-full w-full object-cover"
                   />

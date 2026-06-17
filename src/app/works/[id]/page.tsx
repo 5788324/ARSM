@@ -45,7 +45,7 @@ export default async function WorkDetailPage({
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link href="/works" className="text-sm text-zinc-500 hover:text-zinc-700">
-          ← Library
+          ← 作品库
         </Link>
       </div>
 
@@ -55,7 +55,7 @@ export default async function WorkDetailPage({
         <div className="h-48 w-48 flex-shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
           {work.coverPath ? (
             <img
-              src={work.coverPath}
+              src={`/api/covers/${work.id}`}
               alt={work.displayTitle}
               className="h-full w-full object-cover"
             />
@@ -108,13 +108,13 @@ export default async function WorkDetailPage({
           {/* Voice Actors */}
           {work.workVAs.length > 0 && (
             <div className="mt-2 text-sm text-zinc-500">
-              CV:{' '}
+              声优：
               {work.workVAs.map((wva) => wva.voiceActor.name).join(', ')}
             </div>
           )}
 
           {work.releaseDate && (
-            <p className="mt-1 text-sm text-zinc-500">Released: {work.releaseDate}</p>
+            <p className="mt-1 text-sm text-zinc-500">发布于： {work.releaseDate}</p>
           )}
 
           <p className="mt-1 text-sm text-zinc-400">
@@ -134,7 +134,7 @@ export default async function WorkDetailPage({
 
       {/* Track list */}
       <div className="mt-8">
-        <h2 className="text-lg font-semibold">Tracks</h2>
+        <h2 className="text-lg font-semibold">曲目</h2>
         <div className="mt-3 divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
           {work.tracks.map((track) => {
             const file = track.trackFiles[0];
@@ -163,7 +163,7 @@ export default async function WorkDetailPage({
                     />
                   </audio>
                 ) : (
-                  <span className="text-xs text-red-500">No file</span>
+                  <span className="text-xs text-red-500">无文件</span>
                 )}
               </div>
             );
@@ -174,7 +174,7 @@ export default async function WorkDetailPage({
       {/* Sources */}
       {work.workSources.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold">Sources</h2>
+          <h2 className="text-lg font-semibold">来源</h2>
           <div className="mt-2 space-y-1">
             {work.workSources.map((src) => (
               <div key={src.id} className="text-sm">

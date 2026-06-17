@@ -70,7 +70,7 @@ export default async function ContinueListeningPage() {
                 {/* Cover thumbnail */}
                 <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
                   {h.work.coverPath ? (
-                    <img src={h.work.coverPath} alt="" className="h-full w-full object-cover" />
+                    <img src={`/api/covers/${h.work.id}`} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-zinc-300">♪</div>
                   )}

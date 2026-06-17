@@ -49,7 +49,7 @@ export default async function FavoritesPage() {
               <div className="aspect-square bg-zinc-100 dark:bg-zinc-800">
                 {fav.work.coverPath ? (
                   <img
-                    src={fav.work.coverPath}
+                    src={`/api/covers/${fav.work.id}`}
                     alt={fav.work.displayTitle}
                     className="h-full w-full object-cover"
                   />
