@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 
 interface DuplicateGroup {
@@ -28,13 +28,43 @@ interface DuplicatesResponse {
 export default function DuplicatesPage() {
   const [data, setData] = useState<DuplicatesResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [merging, setMerging] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
+    setLoading(true);
     fetch('/api/admin/duplicates')
       .then((r) => r.json())
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const handleMerge = async (targetId: string, sourceIds: string[]) => {
+    if (!confirm(`Merge ${sourceIds.length} work(s) into the target? This cannot be undone.`)) return;
+
+    setMerging(targetId);
+    setMessage(null);
+
+    try {
+      const res = await fetch('/api/admin/merge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetId, sourceIds }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Merge failed');
+
+      setMessage(`Merged ${result.mergedSources} work(s): ${result.mergedTracks} tracks, ${result.mergedTags} tags.`);
+      fetchData();
+    } catch (err) {
+      setMessage(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setMerging(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -51,9 +81,19 @@ export default function DuplicatesPage() {
         Works that may be duplicates — same code or very similar titles.
       </p>
 
+      {message && (
+        <div className={`mt-4 rounded-lg p-3 text-sm ${
+          message.startsWith('Error')
+            ? 'border border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400'
+            : 'border border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400'
+        }`}>
+          {message}
+        </div>
+      )}
+
       {!data || data.total === 0 ? (
         <div className="mt-8 rounded-xl border border-green-200 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-950">
-          <p className="text-green-700 dark:text-green-300">No duplicates found!</p>
+          <p className="text-green-700 dark:text-green-300">No duplicates found.</p>
         </div>
       ) : (
         <div className="mt-6 space-y-6">
@@ -76,14 +116,26 @@ export default function DuplicatesPage() {
                     &quot;{group.titlePrefix}...&quot;
                   </span>
                 )}
+                {/* Merge all button */}
+                {group.works.length > 1 && (
+                  <button
+                    onClick={() => {
+                      const [target, ...sources] = group.works;
+                      handleMerge(target.id, sources.map((s) => s.id));
+                    }}
+                    disabled={!!merging}
+                    className="ml-auto rounded bg-amber-600 px-2 py-1 text-xs text-white hover:bg-amber-700 disabled:opacity-50"
+                  >
+                    {merging ? 'Merging...' : 'Merge All'}
+                  </button>
+                )}
               </div>
 
               <div className="mt-3 space-y-2">
-                {group.works.map((work) => (
-                  <Link
+                {group.works.map((work, wi) => (
+                  <div
                     key={work.id}
-                    href={`/works/${work.id}`}
-                    className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-3 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
+                    className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{work.displayTitle}</p>
@@ -100,8 +152,25 @@ export default function DuplicatesPage() {
                         <span>{new Date(work.updatedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <span className="ml-4 text-xs text-zinc-400">View →</span>
-                  </Link>
+                    <div className="ml-4 flex items-center gap-2">
+                      <Link
+                        href={`/works/${work.id}`}
+                        className="text-xs text-zinc-400 hover:text-zinc-600"
+                      >
+                        View →
+                      </Link>
+                      {/* Merge into this work */}
+                      {group.works.length > 1 && wi > 0 && (
+                        <button
+                          onClick={() => handleMerge(group.works[0].id, [work.id])}
+                          disabled={!!merging}
+                          className="rounded bg-zinc-200 px-2 py-1 text-xs hover:bg-zinc-300 disabled:opacity-50 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                        >
+                          Merge into ↑
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
