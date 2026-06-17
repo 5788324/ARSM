@@ -5,6 +5,9 @@
  * API base: https://api.asmr-300.com
  */
 
+import { mkdir, writeFile } from 'fs/promises';
+import { dirname } from 'path';
+
 const API_BASE = 'https://api.asmr-300.com';
 
 interface AsmrOneFile {
@@ -146,9 +149,6 @@ async function downloadFile(url: string, destPath: string, onProgress?: (downloa
   });
 
   if (!res.ok || !res.body) throw new Error(`Download failed: ${res.status}`);
-
-  const { mkdir, writeFile } = await import('fs/promises');
-  const { dirname } = await import('path');
 
   await mkdir(dirname(destPath), { recursive: true });
 
