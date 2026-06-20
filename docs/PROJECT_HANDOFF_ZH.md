@@ -1,95 +1,72 @@
 ﻿# ARSM 项目交接文档
 
-日期：2026-06-20
-状态：Phase 4 准备开始
+日期：2026-06-20 | 提交：`3430f81` | 状态：Phase 4 已完成
 
 ---
 
 ## 当前项目状态
 
-ARSM 已完成核心采集链路（asmr.one → 本地 → 导入），当前处于 **MVP+ 到产品化过渡阶段**。
+ARSM 处于 **v1.0 候选状态**。核心采集链路完整，播放体验已升级。
 
-### 已稳定
+### 已完成
 
 - 采集系统：provider registry + runner + AcquisitionJob
 - 导入系统：共享 import service + 重复检测 + review 队列
 - 认证：admin/admin，JWT session 持久化
-- 数据库：SQLite，15 模型
-- 启动方式：`启动ARSM.bat` / `停止ARSM.bat`
-- 数据库重建：`scripts/rebuild-library.ps1`
+- 全局播放器：底部固定栏，倍速 0.75x-2x，自动连续播放
+- 曲目分组：按 mp3/wav/SEあり 等自动归类
+- 字幕识别：.vtt/.srt/.lrc/.txt/.pdf 自动落库展示
+- 元数据自动匹配：import 后 fetch asmr.one 补字段/tags/VAs
+- 采集进度：文件级进度条 + 可展开列表
 - 测试：43/43 通过
-- 构建：通过
+- 构建：零错误
 
-### 当前主要限制
+### 当前限制
 
-- 采集任务缺少文件级进度显示
-- 曲目仍是扁平列表，无子文件夹分组
-- 播放器仍是原生 `<audio>`，没有全局底部播放器
-- 元数据仍需手动 fetch/apply
-- 字幕 / 台本系统未实现
-- 仍有少量英语 UI 残留
+- 仅 asmr.one 单一采集来源
+- 无评分/评论系统
+- 字幕仅识别展示，无翻译
+- 无 Docker 部署
 
 ---
 
-## 启动与维护
+## 启动方式
 
-### 启动
+```
+双击 启动ARSM.bat
+  → seed admin 账号
+  → 启动 dev server
+  → 打开 http://localhost:3000
+  → 用户名: admin  密码: admin
 
-- 双击 `启动ARSM.bat`
-- 浏览器打开 `http://localhost:3000`
-- 默认账号：`admin / admin`
-
-### 停止
-
-- 双击 `停止ARSM.bat`
-
-### 数据库重建
-
-适用场景：
-- 导入结构错误
-- 旧作品记录污染
-- 需要按当前顶级目录重扫
-
-脚本：
-- `scripts/rebuild-library.ps1`
-
-数据库备份目录：
-- `prisma/backups/`
+双击 停止ARSM.bat 停止服务
+```
 
 ---
 
-## 文档入口
+## 文档索引
 
 | 文档 | 用途 |
 |------|------|
-| `docs/PROJECT_FEATURE_DOC_ZH.md` | 功能清单与评审材料 |
+| `README.md` | 项目首页 |
+| `docs/user-guide-zh.md` | 用户指南 |
+| `docs/PROJECT_FEATURE_DOC_ZH.md` | 完整功能清单 + 会议议程 |
 | `docs/ARSM_AUDIT_REPORT_ZH.md` | 审查报告 |
-| `docs/ASMRONE_FEATURE_BENCHMARK_ZH.md` | 对标 asmr.one |
+| `docs/ASMRONE_FEATURE_BENCHMARK_ZH.md` | asmr.one 功能对标 |
 | `docs/COMPETITOR_DEEP_DIVE_ZH.md` | 竞品分析 |
-| `docs/DEEPSEEK_SESSION_LOG_2026-06-20_ZH.md` | 对话摘要 |
-| `docs/WORKLOG_ZH.md` | 持续工作日志 |
-| `docs/PHASE4_EXECUTION_TASKLIST_ZH.md` | Phase 4 执行任务单 |
-| `ARSM_NEXT_PHASE.md` | 阶段路线与战略说明 |
+| `docs/KIKOERU_TECH_REFERENCE_ZH.md` | 技术参考 |
+| `docs/WORKLOG_ZH.md` | 工作日志 |
+| `ARSM_NEXT_PHASE.md` | 下一阶段路线 |
+| `WORKLIST.md` | 工作清单 |
+| `PROJECT_PLAN.md` | 项目计划 |
 
 ---
 
-## 当前权威顺序
+## Phase 5 方向（建议）
 
-当前继续开发时，优先参考顺序：
-
-1. `docs/PROJECT_HANDOFF_ZH.md`
-2. `docs/PHASE4_EXECUTION_TASKLIST_ZH.md`
-3. `ARSM_NEXT_PHASE.md`
-4. `WORKLIST.md`
-5. `PROJECT_PLAN.md`
-
----
-
-## 下一步
-
-直接进入 Phase 4：
-- Sprint A：采集进度可视化
-- Sprint B：曲目子文件夹分组
-- Sprint C：全局播放器基础版
-- Sprint D：元数据自动匹配
-- Sprint E：字幕 / 台本最小支撑
+- 多源刮削（dlsite / hvdb）
+- 字幕翻译（LLM API）
+- Docker 部署
+- 评分系统
+- 深色模式切换
+- 播放列表管理

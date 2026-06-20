@@ -1,70 +1,79 @@
-﻿# ARSM 宸ヤ綔鏃ュ織
+﻿# ARSM 工作日志
 
-> 鎸佺画缁存姢鏃ュ織锛屾瘡闃舵瀹屾垚鍚庤拷鍔犮€?026-06-17 璧枫€?
+> 持续维护日志。2026-06-17 起。
+
 ---
 
 ## 2026-06-17
 
-- 椤圭洰鍒濆鍖栵細Next.js 16 + TypeScript + Prisma 5 + SQLite + Tailwind 4 + NextAuth v5
-- 鍒涘缓 15 妯″瀷 Prisma Schema
-- 瀹炵幇璁よ瘉绯荤粺锛圕redentials + bcryptjs锛?- 瀹炵幇棣栭〉銆佺櫥褰曢〉銆佷綔鍝佸簱銆佹敹钘忋€佺鐞嗛潰鏉?- 鍒濆鎺ㄩ€?GitHub锛歚5788324/ARSM`
+- 项目初始化：Next.js 16 + TypeScript + Prisma 5 + SQLite + Tailwind 4 + NextAuth v5
+- 15 模型 Prisma Schema
+- 认证系统（Credentials + bcryptjs）
+- 首页 / 登录 / 作品库 / 收藏 / 管理面板
+- 初次推送 GitHub
 
 ---
 
 ## 2026-06-18
 
-- 瀹炵幇 RepositoryAdapter锛坙ocal/OpenList/WebDAV锛?- 瀹炵幇鏂囦欢瀵煎叆鎵弿鍣紙閫掑綊 + ffprobe + CJK 閲嶅妫€娴嬶級
-- 瀹炵幇鍏冩暟鎹?provider + fetch/apply API
-- 瀹炵幇閲嶅瀹℃煡銆佷换鍔＄洃鎺с€佷粨搴撶鐞嗐€佸鍏ラ〉闈?- 鍏ㄧ珯涓枃鍖栵紙闄?12 澶勬畫鐣欙級
-- vitest 娴嬭瘯閰嶇疆 + 18/18 娴嬭瘯
-- 25 璺敱鏋勫缓闆堕敊璇?
+- RepositoryAdapter（local/OpenList/WebDAV）
+- 文件导入扫描器（递归 + ffprobe + CJK 重复检测）
+- 元数据 provider + fetch/apply API
+- 重复审查 / 任务监控 / 仓库管理 / 导入页面
+- 全站中文化（主体）
+- vitest 18/18 测试通过
+
 ---
 
 ## 2026-06-19
 
-- asmr.one Provider 鍒濈増锛坓uest API 鈫?inspect + download锛?- 娴佸紡涓嬭浇锛歚Readable.fromWeb 鈫?pipeline 鈫?createWriteStream`
-- 3 娆￠噸璇?+ 120s 瓒呮椂
-- normalizeId 鍔犲浐
-- 缁熶竴 API 鍝嶅簲鏍煎紡 `{ok, action, data}`
-- import 鐘舵€佷笁鎬佸寲锛歞one / review / done_with_errors
-- 淇閲囬泦椤靛搷搴旀牸寮忛€傞厤
-- 鐩綍鐧藉悕鍗曡竟鐣屽姞鍥?- typecheck 閰嶇疆淇锛坴itest/globals锛?- 28/28 娴嬭瘯閫氳繃
+- asmr.one Provider 初版（guest API → inspect + download）
+- 流式下载（Readable.fromWeb → pipeline → createWriteStream）
+- 3 次重试 + 120s 超时
+- normalizeId 加固
+- 统一 API 响应格式
+- import 状态三态化
 
 ---
 
 ## 2026-06-20
 
-### Phase 3: 绯荤粺鍖栨敼閫?- `AcquisitionProvider` 鎺ュ彛 + registry + runner 楠ㄦ灦
-- `AcquisitionJob` Prisma 妯″瀷
-- Runner 杩佺Щ鍒?`AcquisitionJob`
-- 鍏变韩 import service锛坄runImport()`锛?- 鏃ц矾鐢辨敹鍙ｏ紙`/api/acquire` 搴熷純鏍囨敞锛?- `/admin/acquisition` 鈫?浠诲姟瑙嗗浘
+### Phase 3: 系统化改造
+- AcquisitionProvider 接口 + registry + runner
+- AcquisitionJob Prisma 模型
+- Runner 迁移到 AcquisitionJob
+- 共享 import service（runImport）
+- 旧路由收口
+- /admin/acquisition 任务视图
 
-### Phase 3B: 鏀跺彛
-- Runner 鎵ц鏃舵寜 `providerId` 纭畾 provider
-- 鑷姩瀵煎叆澶嶇敤 `runImport()`
-- `groupByTop=true` 淇瀵煎叆鎷嗘暎闂
-- 鍏煎璺敱 inspect 涓嶈Е鍙戜笅杞?- `autoImport=false` 璇箟淇
+### Phase 3B: 收口
+- Runner 按 providerId 确定 provider
+- 自动导入复用 runImport
+- groupByTop=true 修复导入拆散
+- 兼容路由 inspect 不触发下载
 
-### 瀹℃煡涓庝慨澶?- P1: 鍏煎璺敱 inspect銆乺unImport 浠撳簱鎹曡幏銆乪rrorJson 琛ュ叏
-- 鍚姩鍣ㄤ慨澶嶏紙缂栫爜/绔彛/璺緞锛?- NEXTAUTH_SECRET 鎸佷箙鍖?- 鍏ㄩ潰瀹℃煡锛?2 澶勮嫳璇?+ 3 涓?P1 Bug + 2 涓?P3
+### Phase 4: 播放体验 + 字幕
+- Sprint A: 采集进度可视化（文件级进度条 + 展开列表）
+- Sprint B: 曲目子文件夹分组（groupPath/groupLabel，14 种归一化）
+- Sprint C: 全局播放器（React Context 底部栏，倍速，自动续播）
+- Sprint D: 元数据自动匹配（import 后 fetch asmr.one 补字段 + tags + VAs）
+- Sprint E: 字幕/台本识别（TrackSubtitle 模型，.vtt/.srt/.lrc/.txt/.pdf 自动分类落库）
 
-### 鏂囨。
-- 瀹℃煡鎶ュ憡锛歚ARSM_AUDIT_REPORT_ZH.md`
-- 鍔熻兘瀵规爣锛歚ASMRONE_FEATURE_BENCHMARK_ZH.md`
-- 绔炲搧鍒嗘瀽锛歚COMPETITOR_DEEP_DIVE_ZH.md`
-- 椤圭洰鍔熻兘鏂囨。锛歚PROJECT_FEATURE_DOC_ZH.md`
-- 娴嬭瘯锛?3/43 閫氳繃
+### 审查与修复
+- 多轮 P1/P2 修复：正则 / 播放器闭包 / 进度计数 / 字幕落库 / 元数据自动匹配
+- 启动器（启动ARSM.bat / 停止ARSM.bat）
+- NEXTAUTH_SECRET 持久化
 
-### 褰撳墠鐘舵€?- 鏍稿績閲囬泦閾捐矾瀹屾暣锛歩nspect 鈫?download 鈫?import
-- 鎾斁鍣ㄧ畝闄嬶紙鍘熺敓 `<audio>`锛?- 鏇茬洰鏃犲垎缁勶紙鎵佸钩鍒楄〃锛?- 鍏冩暟鎹渶鎵嬪姩鎿嶄綔
-- 瀛楀箷绯荤粺鏈疄鐜?- 12 澶勮嫳璇?UI 娈嬬暀鏈慨
+### 文档
+- 6 份新增文档 + 10 份更新
+- 竞品分析（asmr.one / KikoFlu / kikoeru-express / neokikoeru）
+- 技术参考（kikoeru-express DB schema + KikoFlu 44 service）
+- 用户指南（非开发者可读）
 
-
-### 2026-06-20 晚间补录
-- 回看文档链完整性，确认 6/17 起日志仍偏摘要式，不能视为完整工程日志
-- 新增 docs/PHASE4_EXECUTION_TASKLIST_ZH.md，作为 DeepSeek 执行 / Codex 审查的 Phase 4 权威任务单
-- 更新 README / PROJECT_HANDOFF / ARSM_NEXT_PHASE / WORKLIST / PROJECT_PLAN / user-guide，使其统一指向 Phase 4 入口
-- 归档 2026-06-18 asmr.one 原型探测产物到 docs/archive/2026-06-18-asmrone-prototype/
-- 为运行日志目录补充 .gitignore 规则，避免后续日志污染仓库
-
-
+### 当前状态
+- 采集链路完整：inspect → download → import → metadata auto-match
+- 全局播放器：底部固定栏 + 倍速 + 连续播放
+- 曲目分组：按子文件夹自动归类
+- 字幕识别：.vtt/.srt/.lrc/.txt/.pdf 自动落库展示
+- 测试：43/43 通过
+- 构建：零错误

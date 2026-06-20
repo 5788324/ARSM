@@ -1,56 +1,25 @@
 ﻿# ARSM 项目计划
 
-日期：2026-06-20
-当前阶段：Phase 4 准备开始
+日期：2026-06-20 | 当前阶段：Phase 4 已完成
 
 ---
 
-## Phase 1-3 回顾
+## 路线图
 
-### Phase 1
-- 项目初始化
-- 基础页面
-- 认证系统
-- SQLite + Prisma schema
+### Phase 1 (已完成) — MVP 骨架
+Next.js 脚手架 + 认证 + 基本页面 + 导入系统
 
-### Phase 2
-- 导入系统
-- 重复审查
-- 元数据 fetch/apply
-- 管理后台基础功能
+### Phase 2 (已完成) — 后台补全
+元数据 + 重复审查 + 任务监控 + 仓库管理 + 中文化
 
-### Phase 3
-- asmr.one Provider
-- AcquisitionJob + runner
-- 采集任务后台
-- 自动下载 → 自动导入
+### Phase 3 (已完成) — 采集系统
+asmr.one Provider + registry + runner + AcquisitionJob + 共享 import service
 
----
+### Phase 4 (已完成) — 播放体验 + 字幕
+采集进度可视化 + 曲目分组 + 全局播放器 + 元数据自动匹配 + 字幕识别
 
-## Phase 4 目标
+### Phase 5 (规划中) — 产品化
+多源刮削 + Docker + 评分 + 字幕翻译 + 深色模式
 
-- 采集进度可视化
-- 曲目子文件夹分组
-- 全局播放器基础版
-- 元数据自动匹配
-- 字幕 / 台本最小支撑
-
-执行清单：`docs/PHASE4_EXECUTION_TASKLIST_ZH.md`
-
----
-
-## Phase 5 目标
-
-- 搜索与筛选增强
-- VA / 社团浏览
-- 深色模式
-- 评分系统
-- 播放队列增强
-
----
-
-## Phase 6 目标
-
-- AI 字幕 / 转录
-- 多 provider
-- 更高级的自动化与智能能力
+### Phase 6 (远期) — 智能化
+AI 字幕生成 + 国际化 + 移动端 + 评论
