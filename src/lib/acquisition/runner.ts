@@ -136,7 +136,7 @@ async function runAcquisitionJob(
 
       try {
         const scanRoot = `${opts.targetDir}/${inspectResult.sourceId}`;
-        importResult = await runImport({ rootPath: scanRoot });
+        importResult = await runImport({ rootPath: scanRoot, groupByTop: true });
       } catch (err) {
         importResult.errors.push(err instanceof Error ? err.message : '导入失败');
       }

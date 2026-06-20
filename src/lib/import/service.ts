@@ -13,6 +13,7 @@ import type { FileEntry } from '@/lib/repository/types';
 export interface ImportInput {
   repositoryId?: string;
   rootPath: string;  // absolute path to scan
+  groupByTop?: boolean;  // group all files under top-level folder (for downloaded works)
 }
 
 export interface WorkGroup {
@@ -35,8 +36,9 @@ export interface ImportResult {
 
 /**
  * Scan a local directory and group files into works.
+ * Set groupByTop to true when scanning a single downloaded work (asmr.one output).
  */
-export async function scanDirectory(rootPath: string): Promise<{ workGroups: WorkGroup[]; totalFiles: number; skippedFiles: string[] }> {
+export async function scanDirectory(rootPath: string, groupByTop = false): Promise<{ workGroups: WorkGroup[]; totalFiles: number; skippedFiles: string[] }> {
   const adapter = new LocalAdapter('import', rootPath);
   const entries = await adapter.listFiles('.');
 
@@ -46,7 +48,12 @@ export async function scanDirectory(rootPath: string): Promise<{ workGroups: Wor
   for (const entry of entries) {
     if (entry.isDirectory) continue;
 
-    const folderPath = entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'));
+    // In grouped mode, use top-level segment as folder key
+    // e.g. "RJ01584624/01本編/mp3/01.mp3" → folderKey = "RJ01584624"
+    const firstSlash = entry.relativePath.indexOf('/');
+    const folderPath = groupByTop && firstSlash > 0
+      ? entry.relativePath.substring(0, firstSlash)
+      : entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'));
     const folderKey = folderPath || '__root__';
 
     if (!folders.has(folderKey)) {
@@ -157,7 +164,7 @@ export async function runImport(input: ImportInput): Promise<ImportResult> {
     });
   }
 
-  const { workGroups, totalFiles, skippedFiles } = await scanDirectory(rootPath);
+  const { workGroups, totalFiles, skippedFiles } = await scanDirectory(rootPath, input.groupByTop);
 
   let foundWorks = 0;
   let foundTracks = 0;
