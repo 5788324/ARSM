@@ -37,6 +37,7 @@ model Work {
   releaseDate   String?  // ISO date string, may be partial
   durationSec   Int?     // total duration in seconds
   trackCount    Int      @default(0)
+  userRating    Int?     // 1-5 star personal rating
   sourceSite    String?  // e.g. "dlsite", "asmr.one"
   sourceUrl     String?
   createdAt     DateTime @default(now())
