@@ -1,13 +1,13 @@
 /**
  * Acquisition job runner — orchestrates inspect → download → import → postprocess.
  *
- * Currently uses ImportJob as backing store. Will migrate to AcquisitionJob
- * table once schema is finalized across environments.
+ * Uses AcquisitionJob as backing store. Import step reuses the shared import service.
  */
 
 import { prisma } from '@/lib/prisma';
-import { findProvider } from './registry';
-import { JobStatus, JobStep, JobProgress, PostprocessRequest } from './types';
+import { getProvider, findProvider } from './registry';
+import { runImport } from '@/lib/import/service';
+import { PostprocessRequest } from './types';
 
 /** Create and start an acquisition job. Returns immediately. */
 export async function createAcquisitionJob(params: {
@@ -26,14 +26,13 @@ export async function createAcquisitionJob(params: {
     providerId = provider.id;
   }
 
-  // Use ImportJob as backing store (AcquisitionJob table exists but client may not have it yet)
-  const job = await prisma.importJob.create({
+  const job = await prisma.acquisitionJob.create({
     data: {
-      userId: 'acquisition',
+      providerId,
+      input,
+      normalizedSourceId: input,
+      targetDir,
       status: 'pending',
-      totalFiles: 0,
-      foundWorks: 0,
-      foundTracks: 0,
     },
   });
 
@@ -45,12 +44,12 @@ export async function createAcquisitionJob(params: {
 
 /** Get a job by ID */
 export async function getAcquisitionJob(id: string) {
-  return prisma.importJob.findUnique({ where: { id } });
+  return prisma.acquisitionJob.findUnique({ where: { id } });
 }
 
 /** List recent jobs */
 export async function listAcquisitionJobs(limit = 20) {
-  return prisma.importJob.findMany({
+  return prisma.acquisitionJob.findMany({
     orderBy: { createdAt: 'desc' },
     take: limit,
   });
@@ -60,80 +59,123 @@ export async function listAcquisitionJobs(limit = 20) {
 
 async function runAcquisitionJob(
   jobId: string,
-  opts: { providerId: string; input: string; targetDir: string; autoImport: boolean; postprocess?: PostprocessRequest },
+  opts: {
+    providerId: string;
+    input: string;
+    targetDir: string;
+    autoImport: boolean;
+    postprocess?: PostprocessRequest;
+  },
 ) {
   try {
-    // Step 1: Inspect
-    await prisma.importJob.update({ where: { id: jobId }, data: { status: 'running' } });
-    const provider = findProvider(opts.input);
-    if (!provider) throw new Error(`找不到 provider: ${opts.providerId}`);
+    // Step 1: Resolve provider
+    const provider = getProvider(opts.providerId);
+    if (!provider) {
+      await prisma.acquisitionJob.update({
+        where: { id: jobId },
+        data: { status: 'failed', errorJson: JSON.stringify({ message: `未知 provider: ${opts.providerId}` }), finishedAt: new Date() },
+      });
+      return;
+    }
+
+    // Step 2: Inspect
+    await prisma.acquisitionJob.update({
+      where: { id: jobId },
+      data: { status: 'inspecting', currentStep: 'inspect', startedAt: new Date() },
+    });
 
     const inspectResult = await provider.inspect(opts.input);
 
-    // Step 2: Download
-    const downloadResult = await provider.download(opts.input, opts.targetDir);
-    const hasDownloadErrors = downloadResult.failed > 0;
+    await prisma.acquisitionJob.update({
+      where: { id: jobId },
+      data: {
+        normalizedSourceId: inspectResult.sourceId,
+        progressJson: JSON.stringify({
+          inspect: { fileCount: inspectResult.fileCount, totalSize: inspectResult.totalSize },
+        }),
+      },
+    });
 
-    // Step 3: Import
-    let importWorks = 0;
-    let importTracks = 0;
-    const importErrors: string[] = [];
+    // Step 3: Download
+    await prisma.acquisitionJob.update({
+      where: { id: jobId },
+      data: { status: 'downloading', currentStep: 'download' },
+    });
+
+    const downloadResult = await provider.download(opts.input, opts.targetDir);
+
+    await prisma.acquisitionJob.update({
+      where: { id: jobId },
+      data: {
+        progressJson: JSON.stringify({
+          inspect: { fileCount: inspectResult.fileCount, totalSize: inspectResult.totalSize },
+          download: { totalFiles: downloadResult.total, doneFiles: downloadResult.done, failedFiles: downloadResult.failed, bytesDownloaded: downloadResult.bytesDownloaded },
+        }),
+      },
+    });
+
+    // Step 4: Import (reuses shared import service)
+    let importResult: { status: string; foundWorks: number; foundTracks: number; reviewCount: number; errors: string[] } = {
+      status: 'skipped', foundWorks: 0, foundTracks: 0, reviewCount: 0, errors: [],
+    };
 
     if (opts.autoImport) {
+      await prisma.acquisitionJob.update({
+        where: { id: jobId },
+        data: { status: 'importing', currentStep: 'import' },
+      });
+
       try {
-        const { LocalAdapter } = await import('@/lib/repository/local');
-        const { scanLocalDirectory } = await import('@/lib/scanner');
-
         const scanRoot = `${opts.targetDir}/${inspectResult.sourceId}`;
-        const adapter = new LocalAdapter('acquisition', scanRoot);
-        const scanResult = await scanLocalDirectory('.', adapter);
-
-        for (const group of scanResult.workGroups) {
-          const work = await prisma.work.create({
-            data: {
-              displayTitle: group.folderName,
-              originalTitle: group.folderName,
-              trackCount: group.tracks.length,
-            },
-          });
-          importWorks++;
-          for (const tc of group.tracks) {
-            await prisma.track.create({
-              data: { workId: work.id, trackNumber: tc.trackNumber, title: tc.filename.replace(/\.[^.]+$/, '') },
-            });
-            importTracks++;
-          }
-        }
+        importResult = await runImport({ rootPath: scanRoot });
       } catch (err) {
-        importErrors.push(err instanceof Error ? err.message : '导入失败');
+        importResult.errors.push(err instanceof Error ? err.message : '导入失败');
       }
     }
 
-    // Step 4: Postprocess (stub)
+    // Step 5: Postprocess (stub)
     if (opts.postprocess) {
-      // Future: extract_text, transcribe_audio, translate_text, etc.
+      await prisma.acquisitionJob.update({
+        where: { id: jobId },
+        data: { status: 'postprocessing', currentStep: 'postprocess' },
+      });
     }
 
     // Final status
-    const finalStatus = hasDownloadErrors ? 'done_with_errors' : 'done';
+    const hasDownloadErrors = downloadResult.failed > 0;
+    const hasImportErrors = importResult.errors.length > 0;
+    const hasReview = importResult.reviewCount > 0;
 
-    await prisma.importJob.update({
+    const finalStatus = hasReview
+      ? 'review'
+      : hasDownloadErrors || hasImportErrors
+        ? 'done_with_errors'
+        : 'done';
+
+    const progress = {
+      inspect: { fileCount: inspectResult.fileCount, totalSize: inspectResult.totalSize },
+      download: { totalFiles: downloadResult.total, doneFiles: downloadResult.done, failedFiles: downloadResult.failed, bytesDownloaded: downloadResult.bytesDownloaded },
+      import: { foundWorks: importResult.foundWorks, foundTracks: importResult.foundTracks, reviewCount: importResult.reviewCount, errors: importResult.errors },
+      postprocess: opts.postprocess ? { status: 'stub' } : undefined,
+    };
+
+    await prisma.acquisitionJob.update({
       where: { id: jobId },
       data: {
         status: finalStatus,
-        totalFiles: inspectResult.fileCount,
-        foundWorks: importWorks,
-        foundTracks: importTracks,
-        errors: importErrors.length > 0 ? JSON.stringify(importErrors) : null,
+        currentStep: null,
+        progressJson: JSON.stringify(progress),
+        resultJson: JSON.stringify({ download: { done: downloadResult.done, failed: downloadResult.failed }, import: { foundWorks: importResult.foundWorks, foundTracks: importResult.foundTracks } }),
+        errorJson: importResult.errors.length > 0 ? JSON.stringify({ import: importResult.errors, download: downloadResult.errors }) : null,
         finishedAt: new Date(),
       },
     });
   } catch (err) {
-    await prisma.importJob.update({
+    await prisma.acquisitionJob.update({
       where: { id: jobId },
       data: {
         status: 'failed',
-        errors: JSON.stringify([err instanceof Error ? err.message : 'Unknown error']),
+        errorJson: JSON.stringify({ message: err instanceof Error ? err.message : 'Unknown error' }),
         finishedAt: new Date(),
       },
     });
