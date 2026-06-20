@@ -1,86 +1,95 @@
 ﻿# ARSM 项目交接文档
 
-日期：2026-06-20 | 提交：`bd396ec`
+日期：2026-06-20
+状态：Phase 4 准备开始
 
 ---
 
 ## 当前项目状态
 
-ARSM 已完成核心采集链路（asmr.one → 本地 → 导入），处于 **MVP+ 阶段**。
+ARSM 已完成核心采集链路（asmr.one → 本地 → 导入），当前处于 **MVP+ 到产品化过渡阶段**。
 
-### ✅ 已稳定
+### 已稳定
 
 - 采集系统：provider registry + runner + AcquisitionJob
 - 导入系统：共享 import service + 重复检测 + review 队列
 - 认证：admin/admin，JWT session 持久化
 - 数据库：SQLite，15 模型
+- 启动方式：`启动ARSM.bat` / `停止ARSM.bat`
+- 数据库重建：`scripts/rebuild-library.ps1`
 - 测试：43/43 通过
-- 构建：零错误
+- 构建：通过
 
-### ⚠️ 已知限制
+### 当前主要限制
 
-- 播放器简陋（原生 `<audio>`，无全局播放器）
-- 曲目扁平列表（无子文件夹分组）
-- 元数据需手动 fetch/apply
-- 字幕系统未实现
-- 12 处英语 UI 残留
-
----
-
-## 启动方式
-
-```
-双击 启动ARSM.bat
-  → seed admin 账号
-  → 启动 dev server
-  → 打开 http://localhost:3000
-  → 用户名: admin  密码: admin
-
-双击 停止ARSM.bat 停止服务
-```
+- 采集任务缺少文件级进度显示
+- 曲目仍是扁平列表，无子文件夹分组
+- 播放器仍是原生 `<audio>`，没有全局底部播放器
+- 元数据仍需手动 fetch/apply
+- 字幕 / 台本系统未实现
+- 仍有少量英语 UI 残留
 
 ---
 
-## 如何使用
+## 启动与维护
 
-1. 登录 → 管理 → 📥 采集任务
-2. 输入 RJ 编号（如 `RJ01593868`）→ 开始采集
-3. 等待 inspect → download → import 完成
-4. 作品库查看已导入作品
+### 启动
+
+- 双击 `启动ARSM.bat`
+- 浏览器打开 `http://localhost:3000`
+- 默认账号：`admin / admin`
+
+### 停止
+
+- 双击 `停止ARSM.bat`
+
+### 数据库重建
+
+适用场景：
+- 导入结构错误
+- 旧作品记录污染
+- 需要按当前顶级目录重扫
+
+脚本：
+- `scripts/rebuild-library.ps1`
+
+数据库备份目录：
+- `prisma/backups/`
 
 ---
 
-## 文档索引
+## 文档入口
 
 | 文档 | 用途 |
 |------|------|
-| `PROJECT_FEATURE_DOC_ZH.md` | 完整功能清单 + 会议议程 |
-| `ARSM_AUDIT_REPORT_ZH.md` | 全面审查报告（P1/P2/P3） |
-| `ASMRONE_FEATURE_BENCHMARK_ZH.md` | asmr.one 功能对标 |
-| `COMPETITOR_DEEP_DIVE_ZH.md` | 竞品分析 + UI 模式 |
-| `DEEPSEEK_SESSION_LOG_2026-06-20_ZH.md` | 对话记录摘要 |
-| `WORKLOG_ZH.md` | 持续工作日志 |
-| `acquisition-architecture.md` | 采集系统架构 |
-| `acquisition-provider-interface.md` | 如何接第二个 provider |
-| `acquisition-admin-workflow.md` | 管理面板交互流程 |
-| `ARSM_NEXT_UI_PLAYER_METADATA_TASKLIST_ZH.md` | 下一阶段任务单（Codex） |
+| `docs/PROJECT_FEATURE_DOC_ZH.md` | 功能清单与评审材料 |
+| `docs/ARSM_AUDIT_REPORT_ZH.md` | 审查报告 |
+| `docs/ASMRONE_FEATURE_BENCHMARK_ZH.md` | 对标 asmr.one |
+| `docs/COMPETITOR_DEEP_DIVE_ZH.md` | 竞品分析 |
+| `docs/DEEPSEEK_SESSION_LOG_2026-06-20_ZH.md` | 对话摘要 |
+| `docs/WORKLOG_ZH.md` | 持续工作日志 |
+| `docs/PHASE4_EXECUTION_TASKLIST_ZH.md` | Phase 4 执行任务单 |
+| `ARSM_NEXT_PHASE.md` | 阶段路线与战略说明 |
 
 ---
 
-## 已知问题
+## 当前权威顺序
 
-见 `ARSM_AUDIT_REPORT_ZH.md`：
-- P1 Bug x 3（死搜索框、除零、虚设 DLsite 选项）
-- P2 英语残留 x 9
-- P3 优化 x 2
+当前继续开发时，优先参考顺序：
+
+1. `docs/PROJECT_HANDOFF_ZH.md`
+2. `docs/PHASE4_EXECUTION_TASKLIST_ZH.md`
+3. `ARSM_NEXT_PHASE.md`
+4. `WORKLIST.md`
+5. `PROJECT_PLAN.md`
 
 ---
 
-## 下一阶段
+## 下一步
 
-见 `ARSM_NEXT_UI_PLAYER_METADATA_TASKLIST_ZH.md`：
-- Phase A：采集进度可视化
-- Phase B：曲目子文件夹分组
-- Phase C：全局播放器
-- Phase D：元数据自动匹配
-- Phase E：字幕/台本系统
+直接进入 Phase 4：
+- Sprint A：采集进度可视化
+- Sprint B：曲目子文件夹分组
+- Sprint C：全局播放器基础版
+- Sprint D：元数据自动匹配
+- Sprint E：字幕 / 台本最小支撑
