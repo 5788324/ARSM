@@ -26,48 +26,44 @@
 - 3 次重试 + 120s 超时，normalizeId 加固
 - 统一 API 响应格式，import 状态三态化
 
-## 2026-06-20 (Morning-Afternoon)
+## 2026-06-20（白天）
 
-### Phase 3: 系统化改造
+### Phase 3：采集系统系统化
 - AcquisitionProvider 接口 + registry + runner
 - AcquisitionJob Prisma 模型，Runner 迁移到 AcquisitionJob
 - 共享 import service（runImport）
-- 旧路由收口，/admin/acquisition 任务视图
+- 旧路由收口，/admin/acquisition 改为任务视图
 
-### Phase 3B: 收口
-- Runner 按 providerId 确定 provider
-- 自动导入复用 runImport，groupByTop=true 修复导入拆散
-- 兼容路由 inspect 不触发下载
+### Phase 4：播放体验 + 字幕
+- Sprint A：采集进度可视化（文件级进度条 + 展开列表）
+- Sprint B：曲目子文件夹分组（groupPath/groupLabel，14 种归一化）
+- Sprint C：全局播放器（React Context 底部栏，倍速，自动续播）
+- Sprint D：元数据自动匹配（import 后 fetch asmr.one 补字段 + tags + VAs）
+- Sprint E：字幕/台本识别（TrackSubtitle 模型，.vtt/.srt/.lrc/.txt/.pdf 自动分类落库）
 
-### Phase 4: 播放体验 + 字幕
-- Sprint A: 采集进度可视化（文件级进度条 + 展开列表）
-- Sprint B: 曲目子文件夹分组（groupPath/groupLabel，14 种归一化）
-- Sprint C: 全局播放器（React Context 底部栏，倍速，自动续播）
-- Sprint D: 元数据自动匹配（import 后 fetch asmr.one 补字段 + tags + VAs）
-- Sprint E: 字幕/台本识别（TrackSubtitle 模型，.vtt/.srt/.lrc/.txt/.pdf 自动分类落库）
-
-### 文档与审查
-- 多轮 P1/P2 修复：正则 / 播放器闭包 / 进度计数 / 字幕落库 / 元数据自动匹配
+### 审查与收口
+- 多轮 P1/P2 修复：正则、播放器闭包、进度计数、字幕落库、元数据自动匹配
 - 启动器（启动ARSM.bat / 停止ARSM.bat）
-- 6 份新增文档 + 10 份更新
-- 竞品分析（asmr.one / KikoFlu / kikoeru-express / neokikoeru）
-- 用户指南，v1.0 发布说明
+- v1.0 文档链补齐，交接、路线、工作日志统一
 
-## 2026-06-20 (Evening)
+## 2026-06-20（晚上）
 
-### Phase 5: 产品化增强
-- A: 作品库搜索 + 筛选（keyword/circle/VA/tag/subtitle/sort/page）
-- B: 关系浏览页（/circles/[id], /voice-actors/[id], /tags/[id]）
-- C: 播放器队列 + 模式（addToQueue, removeFromQueue, loopMode）
-- D: 字幕文本阅读（/api/subtitles 读取 .txt/.vtt/.srt/.lrc）
-- E: 深色模式（ThemeToggle + ThemeInit）+ Docker + 英语清理
+### Phase 5：产品化增强完成
+- 作品库搜索：keyword / sort / subtitle / page 多状态联动
+- 搜索地址栏同步：刷新不丢状态，链接可分享
+- 关系浏览页：/circles/[id]、/voice-actors/[id]、/tags/[id]
+- 播放器增强：队列面板、追加队列、移除、清空、循环模式、本地记忆
+- 字幕文本阅读：点击字幕文件名弹窗读取 .txt/.vtt/.srt/.lrc
+- 深色模式：ThemeToggle + SSR 安全初始化
+- Works 与关系页登录守卫补齐
+- clearQueue 停止音频、subtitle 可读、addToQueue UI 闭环
 
-### 当前状态
-- 采集链路完整：inspect → download → import → metadata
-- 搜索可用：多字段 + 筛选 + 分页
-- 浏览可点：社团/声优/标签跳转关系页
-- 播放器：队列 + 循环模式 + 记忆
-- 字幕：识别 + 文本阅读
-- 深色模式：一键切换
-- 测试：43/43 通过
-- 构建：零错误
+### Phase 5 审查结论
+- 代码审查闭环完成
+- 最后缺口“/works 搜索状态同步到 URL”由 `0a42931` 收口
+- Phase 5 现已可视为完成，可进入 Phase 6
+
+### 当前版本状态
+- 采集闭环：inspect → download → import → metadata
+- 使用闭环：搜索 → 浏览 → 播放 → 字幕阅读 → 继续播放
+- 质量状态：当前分支已完成 Phase 5 收口，待同步文档并进入下一阶段开发
