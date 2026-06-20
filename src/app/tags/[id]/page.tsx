@@ -11,6 +11,9 @@ export default async function TagPage({ params }: { params: Promise<{ id: string
       <Link href="/works" className="text-sm text-zinc-500 hover:text-zinc-700">← 作品库</Link>
       <h1 className="mt-2 text-2xl font-bold">#{tag.name}</h1>
       <p className="text-sm text-zinc-500">{tag.workTags.length} 个作品</p>
+      {tag.workTags.length === 0 ? (
+        <p className="mt-4 text-zinc-400">暂无作品</p>
+      ) : (
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {tag.workTags.map((wt) => (
           <Link key={wt.work.id} href={`/works/${wt.work.id}`} className="rounded-xl border border-zinc-200 p-4 hover:shadow dark:border-zinc-800">
@@ -19,6 +22,7 @@ export default async function TagPage({ params }: { params: Promise<{ id: string
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 }

@@ -41,7 +41,7 @@ function WorksContent() {
         <span className="text-sm text-zinc-500">{total} 个作品</span>
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); setPage(1); setTimeout(fetchWorks, 0); }} className="flex flex-wrap gap-2 mb-6">
+      <form onSubmit={(e) => { e.preventDefault(); setPage(1); setKeyword(keyword); }} className="flex flex-wrap gap-2 mb-6">
         <input type="search" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="搜索作品/编号/社团/声优/标签..." className="flex-1 min-w-[200px] rounded-lg border border-zinc-300 px-4 py-2 text-sm focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800" />
         <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800">
           <option value="recent">最新导入</option>

@@ -97,10 +97,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
   const removeFromQueue = useCallback((index: number) => {
     setState((s) => {
-      const q = [...s.queue]; q.splice(index, 1);
-      const ci = index < s.currentIndex ? s.currentIndex - 1 : index === s.currentIndex ? -1 : s.currentIndex;
+      const q = [...s.queue]; const removed = q[index];
+      q.splice(index, 1);
+      let ci = s.currentIndex;
+      if (index < s.currentIndex) ci = s.currentIndex - 1;
+      else if (index === s.currentIndex) ci = -1;
       stateRef.current.queue = q;
-      return { ...s, queue: q, currentIndex: q.length === 0 ? -1 : ci };
+      // Stop audio if we removed the currently playing track
+      if (index === s.currentIndex && audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+      return { ...s, queue: q, currentIndex: q.length === 0 ? -1 : ci, playing: index === s.currentIndex ? false : s.playing };
     });
   }, []);
   const clearQueue = useCallback(() => {
@@ -132,7 +140,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 pb-safe">
           <div className="mx-auto max-w-5xl px-4 py-2">
             <div className="flex items-center gap-3">
-              <img src={currentTrack.coverPath ? `/api/covers/${currentTrack.workId}` : ''} alt="" className="h-10 w-10 flex-shrink-0 rounded-md bg-zinc-100 object-cover dark:bg-zinc-800" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              {currentTrack.coverPath ? (
+                <img src={`/api/covers/${currentTrack.workId}`} alt="" className="h-10 w-10 flex-shrink-0 rounded-md bg-zinc-100 object-cover dark:bg-zinc-800" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              ) : (
+                <div className="h-10 w-10 flex-shrink-0 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">♪</div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{currentTrack.title}</p>
                 <p className="truncate text-xs text-zinc-500">{currentTrack.workTitle}</p>
