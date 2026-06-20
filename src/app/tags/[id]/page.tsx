@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function TagPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (!session) redirect('/login');
   const { id } = await params;
   const tag = await prisma.tag.findUnique({ where: { id }, include: { workTags: { include: { work: { include: { _count: { select: { tracks: true } } } } }, orderBy: { work: { updatedAt: 'desc' } } } } });
   if (!tag) return <div className="mx-auto max-w-4xl px-4 py-8"><p>标签未找到</p></div>;

@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function VAPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (!session) redirect('/login');
   const { id } = await params;
   const va = await prisma.voiceActor.findUnique({ where: { id }, include: { workVAs: { include: { work: { include: { _count: { select: { tracks: true } } } } }, orderBy: { work: { updatedAt: 'desc' } } } } });
   if (!va) return <div className="mx-auto max-w-4xl px-4 py-8"><p>声优未找到</p></div>;

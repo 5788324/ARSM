@@ -113,6 +113,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
   const clearQueue = useCallback(() => {
     stateRef.current.queue = [];
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
     setState((s) => ({ ...s, queue: [], currentIndex: -1, playing: false }));
   }, []);
 

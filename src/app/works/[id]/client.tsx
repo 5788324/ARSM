@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { usePlayer } from '@/components/player/player-provider';
 import Link from 'next/link';
 
@@ -15,7 +16,8 @@ interface Track {
 }
 
 export default function WorkClient({ work }: { work: any }) {
-  const { play, currentIndex, playing, queue } = usePlayer();
+  const { play, addToQueue, currentIndex, playing, queue } = usePlayer();
+  const [subContent, setSubContent] = useState<{ title: string; text: string } | null>(null);
   const tracks = (work.tracks as Track[]) || [];
 
   // Group tracks by groupLabel
@@ -36,14 +38,16 @@ export default function WorkClient({ work }: { work: any }) {
   const totalDuration = tracks.reduce((s, t) => s + (t.durationSec || 0), 0);
   const formatDur = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 
+  const trackToItem = (t: Track) => ({
+    id: t.id, title: t.title, trackNumber: t.trackNumber,
+    workTitle: work.displayTitle as string, workId: work.id as string,
+    coverPath: work.coverPath as string | null,
+    streamUrl: `/api/tracks/${t.id}/stream`,
+    durationSec: t.durationSec,
+  });
+
   const handlePlayAll = (ts: Track[]) => {
-    const items = ts.map((t) => ({
-      id: t.id, title: t.title, trackNumber: t.trackNumber,
-      workTitle: work.displayTitle as string, workId: work.id as string,
-      coverPath: work.coverPath as string | null,
-      streamUrl: `/api/tracks/${t.id}/stream`,
-      durationSec: t.durationSec,
-    }));
+    const items = ts.map(trackToItem);
     if (items.length > 0) play(items[0], items);
   };
 
@@ -105,6 +109,7 @@ export default function WorkClient({ work }: { work: any }) {
                       <p className={`text-sm truncate ${active ? 'font-medium text-blue-700 dark:text-blue-300' : ''}`}>{t.title}</p>
                       {t.durationSec && <p className="text-xs text-zinc-500">{formatDur(t.durationSec)}</p>}
                     </div>
+                    <button onClick={() => addToQueue(trackToItem(t))} className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">+ 队列</button>
                   </div>
                 );
               })}
@@ -126,6 +131,7 @@ export default function WorkClient({ work }: { work: any }) {
                       <p className={`text-sm truncate ${active ? 'font-medium text-blue-700 dark:text-blue-300' : ''}`}>{t.title}</p>
                       {t.durationSec && <p className="text-xs text-zinc-500">{formatDur(t.durationSec)}</p>}
                     </div>
+                    <button onClick={() => addToQueue(trackToItem(t))} className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">+ 队列</button>
                   </div>
                 );
               })}
@@ -139,13 +145,30 @@ export default function WorkClient({ work }: { work: any }) {
             <h2 className="text-lg font-semibold">字幕 / 台本</h2>
             <div className="mt-2 divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
               {work.trackSubtitles.map((sub: any) => (
-                <div key={sub.id} className="flex items-center gap-3 px-4 py-2.5">
+                <div key={sub.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900" onClick={async () => {
+                  const res = await fetch(`/api/subtitles?id=${sub.id}`);
+                  const data = await res.json();
+                  if (data.ok) setSubContent({ title: sub.filePath?.split('/').pop() || '字幕', text: data.data.content || '(无内容)' });
+                }}>
                   <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-mono dark:bg-zinc-800">{sub.kind?.toUpperCase()}</span>
-                  <span className="flex-1 text-sm truncate">{sub.filePath?.split('/').pop()}</span>
+                  <span className="flex-1 text-sm truncate text-blue-600 dark:text-blue-400">{sub.filePath?.split('/').pop()}</span>
                   {sub.label && <span className="text-xs text-zinc-500">{sub.label}</span>}
                   {sub.language && <span className="text-xs text-zinc-400">{sub.language}</span>}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Subtitle viewer modal */}
+        {subContent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setSubContent(null)}>
+            <div className="mx-4 max-h-[80vh] w-full max-w-2xl overflow-auto rounded-xl bg-white p-6 dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">{subContent.title}</h3>
+                <button onClick={() => setSubContent(null)} className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-lg">✕</button>
+              </div>
+              <pre className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300 font-sans leading-relaxed max-h-[60vh] overflow-auto">{subContent.text}</pre>
             </div>
           </div>
         )}

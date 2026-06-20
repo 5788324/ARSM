@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function CirclePage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (!session) redirect('/login');
   const { id } = await params;
   const circle = await prisma.circle.findUnique({ where: { id }, include: { works: { orderBy: { updatedAt: 'desc' }, include: { _count: { select: { tracks: true } } } } } });
   if (!circle) return <div className="mx-auto max-w-4xl px-4 py-8"><p>社团未找到</p></div>;
