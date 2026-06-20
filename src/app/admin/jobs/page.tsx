@@ -40,7 +40,7 @@ interface JobStatus {
 
 const statusLabel: Record<string, string> = {
   pending: '等待中', running: '运行中', done: '已完成',
-  failed: '失败', review: '待审查',
+  failed: '失败', review: '待审查', done_with_errors: '部分失败',
 };
 
 export default function JobsPage() {
@@ -105,6 +105,7 @@ export default function JobsPage() {
                   <span className="text-sm font-medium">导入 #{job.id.slice(-6)}</span>
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                     job.status === 'done' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                    job.status === 'done_with_errors' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' :
                     job.status === 'failed' ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' :
                     job.status === 'review' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' :
                     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'

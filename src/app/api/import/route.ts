@@ -266,7 +266,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Update job status
-    const finalStatus = reviewCount > 0 ? 'review' : (importErrors.length > 0 ? 'done' : 'done');
+    const finalStatus = reviewCount > 0
+      ? 'review'
+      : importErrors.length > 0
+        ? 'done_with_errors'
+        : 'done';
 
     await prisma.importJob.update({
       where: { id: job.id },

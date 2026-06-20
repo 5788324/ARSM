@@ -3,9 +3,14 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 /**
- * Phase 9: Acquisition workflow — admin-triggered download of a specific work.
+ * ⚠ DEPRECATED — use /api/acquisition/asmrone for asmr.one downloads.
  *
- * Accepts a work URL or code, downloads media into the configured repository.
+ * This was the Phase 9 MVP placeholder. It only records acquisition requests
+ * and tells the admin to manually place files. Real download capability now
+ * lives in src/lib/acquisition/asmrone.ts with its own API route.
+ *
+ * This route is kept for backward compatibility and will be removed or unified
+ * once the acquisition job system is implemented.
  *
  * Safety: single-work only, no crawling, admin-only.
  */
