@@ -12,24 +12,31 @@ export function MetadataEditor({ work, onSaved }: { work: any; onSaved: () => vo
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const saveRating = async () => {
-    const res = await fetch(`/api/ratings?workId=${work.id}`, {
+  const save = async (refetch = false) => {
+    setSaving(true); setError('');
+    // Always save rating first
+    const rRes = await fetch(`/api/ratings?workId=${work.id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rating }),
     });
-    if (!res.ok) setError('评分保存失败');
-  };
+    if (!rRes.ok) { setError('评分保存失败'); setSaving(false); return; }
 
-  const save = async (refetch = false) => {
-    setSaving(true); setError('');
-    await saveRating();
+    // Only call admin API if admin fields actually changed
+    const adminChanged = title !== (work.displayTitle || '') || origTitle !== (work.originalTitle || '') || release !== (work.releaseDate || '');
+    if (!adminChanged && !refetch) {
+      setSaving(false);
+      router.refresh();
+      onSaved();
+      return;
+    }
+
     const res = await fetch(`/api/metadata/edit?workId=${work.id}`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ displayTitle: title, originalTitle: origTitle, releaseDate: release, refetch }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || '保存失败');
+      setError(`评分已保存，但：${data.error || '元数据保存失败'}`);
       setSaving(false);
       return;
     }
