@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 interface WorkCard { id: string; displayTitle: string; workCode: string | null; coverPath: string | null; circle: { name: string } | null; _count: { tracks: number }; }
 
 function WorksContent() {
   const sp = useSearchParams();
+  const router = useRouter();
   const [keyword, setKeyword] = useState(sp.get('keyword') || '');
   const [sort, setSort] = useState(sp.get('sort') || 'recent');
   const [hasSubtitle, setHasSubtitle] = useState(sp.get('hasSubtitle') === 'true');
@@ -33,6 +34,17 @@ function WorksContent() {
   }, [keyword, sort, hasSubtitle, page]);
 
   useEffect(() => { fetchWorks(); }, [fetchWorks]);
+
+  // Sync state to URL after fetch
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (keyword) params.set('keyword', keyword);
+    if (sort !== 'recent') params.set('sort', sort);
+    if (hasSubtitle) params.set('hasSubtitle', 'true');
+    if (page > 1) params.set('page', String(page));
+    const qs = params.toString();
+    router.replace(qs ? `/works?${qs}` : '/works', { scroll: false });
+  }, [keyword, sort, hasSubtitle, page, router]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
