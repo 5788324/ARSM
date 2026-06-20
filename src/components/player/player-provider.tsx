@@ -44,9 +44,9 @@ export function usePlayer() {
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stateRef = useRef<PlayerState>({ queue: [], currentIndex: -1, playing: false, currentTime: 0, duration: 0, volume: 1, rate: 1 });
+  const playTrackRef = useRef<(index: number) => void>(() => {});
   const [state, setState] = useState<PlayerState>(stateRef.current);
 
-  // Sync ref
   useEffect(() => { stateRef.current = state; }, [state]);
 
   // Init audio element
@@ -62,7 +62,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const s = stateRef.current;
       const nextIdx = s.currentIndex + 1;
       if (nextIdx < s.queue.length) {
-        setTimeout(() => playTrack(nextIdx), 200);
+        setTimeout(() => playTrackRef.current(nextIdx), 200);
       } else {
         setState((prev) => ({ ...prev, playing: false }));
       }
@@ -81,14 +81,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const playTrack = useCallback((index: number) => {
-    const t = state.queue[index];
+    const q = stateRef.current.queue;
+    const t = q[index];
     if (!t || !audioRef.current) return;
     audioRef.current.src = t.streamUrl;
-    audioRef.current.playbackRate = state.rate;
-    audioRef.current.volume = state.volume;
+    audioRef.current.playbackRate = stateRef.current.rate;
+    audioRef.current.volume = stateRef.current.volume;
     audioRef.current.play().catch(() => {});
     setState((s) => ({ ...s, currentIndex: index, playing: true }));
-  }, [state.queue, state.rate, state.volume]);
+  }, []);
+
+  // Keep playTrackRef current so onEnd always calls latest
+  useEffect(() => { playTrackRef.current = playTrack; }, [playTrack]);
 
   const play = useCallback((track: TrackItem, queue?: TrackItem[]) => {
     const newQueue = queue || [track];

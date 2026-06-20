@@ -1,5 +1,6 @@
 ﻿/**
  * Shared import service — Phase 4 fix: subtitle pipeline + full group path.
+ * All regex use single backslash (proper JS literal).
  */
 
 import { prisma } from '@/lib/prisma';
@@ -18,26 +19,51 @@ export async function scanDirectory(rootPath: string, groupByTop = false) {
   const folders = new Map<string, { tracks: WorkGroup['tracks']; coverPath?: string; subtitleFiles: SubtitleFile[] }>();
   const skippedFiles: string[] = [];
 
-  function classifyKind(name: string) { if (/\.vtt$/i.test(name)) return 'vtt'; if (/\.srt$/i.test(name)) return 'srt'; if (/\.lrc$/i.test(name)) return 'lrc'; if (/\.txt$/i.test(name)) return 'txt'; if (/\.pdf$/i.test(name)) return 'pdf'; return 'txt'; }
-  function classifyLabel(name: string) { const l = name.toLowerCase(); if (l.includes('字幕') || l.includes('subtitle')) return '字幕'; if (l.includes('台本') || l.includes('script')) return '台本'; if (l.includes('readme')) return '说明'; return '文本'; }
-  function detectLanguage(name: string): string | undefined { const l = name.toLowerCase(); if (/[\u3040-\u309f\u30a0-\u30ff]/.test(name)) return 'ja'; if (/[\u4e00-\u9fff]/.test(name)) return 'zh-CN'; return undefined; }
+  function classifyKind(name: string) {
+    if (/\.vtt$/i.test(name)) return 'vtt';
+    if (/\.srt$/i.test(name)) return 'srt';
+    if (/\.lrc$/i.test(name)) return 'lrc';
+    if (/\.txt$/i.test(name)) return 'txt';
+    if (/\.pdf$/i.test(name)) return 'pdf';
+    return 'txt';
+  }
+  function classifyLabel(name: string) {
+    const l = name.toLowerCase();
+    if (l.includes('字幕') || l.includes('subtitle')) return '字幕';
+    if (l.includes('台本') || l.includes('script')) return '台本';
+    if (l.includes('readme')) return '说明';
+    return '文本';
+  }
+  function detectLanguage(name: string): string | undefined {
+    if (/[\u3040-\u309f\u30a0-\u30ff]/.test(name)) return 'ja';
+    if (/[\u4e00-\u9fff]/.test(name)) return 'zh-CN';
+    return undefined;
+  }
 
   for (const entry of entries) {
     if (entry.isDirectory) continue;
     const firstSlash = entry.relativePath.indexOf('/');
-    const folderPath = groupByTop && firstSlash > 0 ? entry.relativePath.substring(0, firstSlash) : entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'));
+    const folderPath = groupByTop && firstSlash > 0
+      ? entry.relativePath.substring(0, firstSlash)
+      : entry.relativePath.substring(0, entry.relativePath.lastIndexOf('/'));
     const folderKey = folderPath || '__root__';
     if (!folders.has(folderKey)) folders.set(folderKey, { tracks: [], subtitleFiles: [] });
     const group = folders.get(folderKey)!;
 
     if (isAudioFile(entry.name)) {
-      const tm = entry.name.match(/^(\\d+)/);
+      const tm = entry.name.match(/^(\d+)/);
       const tn = tm ? parseInt(tm[1], 10) : group.tracks.length + 1;
       group.tracks.push({ relativePath: entry.relativePath, filename: entry.name, trackNumber: tn, size: entry.size });
-    } else if (/^(cover|folder|jacket)\\.(jpg|jpeg|png|webp)$/i.test(entry.name)) {
+    } else if (/^(cover|folder|jacket)\.(jpg|jpeg|png|webp)$/i.test(entry.name)) {
       group.coverPath = entry.relativePath;
-    } else if (/\\.(vtt|srt|lrc|txt|pdf)$/i.test(entry.name)) {
-      group.subtitleFiles.push({ relativePath: entry.relativePath, filename: entry.name, kind: classifyKind(entry.name), label: classifyLabel(entry.name), language: detectLanguage(entry.name) });
+    } else if (/\.(vtt|srt|lrc|txt|pdf)$/i.test(entry.name)) {
+      group.subtitleFiles.push({
+        relativePath: entry.relativePath,
+        filename: entry.name,
+        kind: classifyKind(entry.name),
+        label: classifyLabel(entry.name),
+        language: detectLanguage(entry.name),
+      });
     } else {
       skippedFiles.push(entry.relativePath);
     }
@@ -47,19 +73,35 @@ export async function scanDirectory(rootPath: string, groupByTop = false) {
   for (const [fp, g] of folders) {
     if (g.tracks.length === 0) continue;
     g.tracks.sort((a, b) => a.trackNumber - b.trackNumber);
-    wg.push({ folderName: fp === '__root__' ? '导入作品' : fp.split('/').pop()!, folderPath: fp, tracks: g.tracks, coverPath: g.coverPath, subtitleFiles: g.subtitleFiles });
+    wg.push({
+      folderName: fp === '__root__' ? '导入作品' : fp.split('/').pop()!,
+      folderPath: fp, tracks: g.tracks,
+      coverPath: g.coverPath, subtitleFiles: g.subtitleFiles,
+    });
   }
   return { workGroups: wg, totalFiles: entries.length, skippedFiles };
 }
 
 async function findDuplicates(group: WorkGroup) {
   const c: { id: string; displayTitle: string; workCode: string | null }[] = [];
-  const cm = group.folderName.match(/\\b(RJ|VJ|BJ)\\d{4,}\\b/i);
+  const cm = group.folderName.match(/\b(RJ|VJ|BJ)\d{4,}\b/i);
   const fc = cm ? cm[0].toUpperCase() : null;
-  if (fc) { const r = await prisma.work.findMany({ where: { workCode: fc }, select: { id: true, displayTitle: true, workCode: true } }); c.push(...r); }
-  if (c.length === 0) { const tk = group.folderName.substring(0, 20); const tm = await prisma.work.findMany({ where: { displayTitle: { contains: tk } }, select: { id: true, displayTitle: true, workCode: true }, take: 5 }); for (const m of tm) { if (lcp(group.folderName, m.displayTitle).length >= 10 || cor(group.folderName, m.displayTitle) > 0.7) c.push(m); } }
+  if (fc) {
+    const r = await prisma.work.findMany({ where: { workCode: fc }, select: { id: true, displayTitle: true, workCode: true } });
+    c.push(...r);
+  }
+  if (c.length === 0) {
+    const tk = group.folderName.substring(0, 20);
+    const tm = await prisma.work.findMany({ where: { displayTitle: { contains: tk } }, select: { id: true, displayTitle: true, workCode: true }, take: 5 });
+    for (const m of tm) {
+      const cp = lcp(group.folderName, m.displayTitle);
+      const or = cor(group.folderName, m.displayTitle);
+      if (cp.length >= 10 || or > 0.7) c.push(m);
+    }
+  }
   return c;
 }
+
 function lcp(a: string, b: string) { let i = 0; const l = Math.min(a.length, b.length); while (i < l && a[i] === b[i]) i++; return a.substring(0, i); }
 function cor(a: string, b: string) { const s = a.length < b.length ? a : b; const l = s === a ? b : a; if (s.length === 0) return 0; const set = new Set(l); let o = 0; for (const ch of s) if (set.has(ch)) o++; return o / s.length; }
 
@@ -70,7 +112,9 @@ function ngSort(p: string) { const v = GP[p.toLowerCase()]; return v != null ? S
 
 export async function runImport(input: ImportInput): Promise<ImportResult> {
   const { rootPath } = input;
-  let repo = input.repositoryId ? await prisma.storageRepository.findUnique({ where: { id: input.repositoryId } }) : await prisma.storageRepository.findFirst({ where: { type: 'local', isEnabled: true } });
+  let repo = input.repositoryId
+    ? await prisma.storageRepository.findUnique({ where: { id: input.repositoryId } })
+    : await prisma.storageRepository.findFirst({ where: { type: 'local', isEnabled: true } });
   if (!repo) repo = await prisma.storageRepository.create({ data: { name: '本地媒体库', type: 'local', rootPath, isEnabled: true } });
 
   const { workGroups, totalFiles, skippedFiles } = await scanDirectory(rootPath, input.groupByTop);
@@ -81,8 +125,12 @@ export async function runImport(input: ImportInput): Promise<ImportResult> {
   for (const group of workGroups) {
     try {
       const dups = await findDuplicates(group);
-      if (dups.length > 0) { rc++; reviewCandidates!.push({ folderName: group.folderName, folderCode: null, candidateWorks: dups.map((d) => ({ id: d.id, title: d.displayTitle, code: d.workCode })) }); continue; }
-      const cm = group.folderName.match(/\\b(RJ|VJ|BJ)\\d{4,}\\b/i);
+      if (dups.length > 0) {
+        rc++;
+        reviewCandidates!.push({ folderName: group.folderName, folderCode: null, candidateWorks: dups.map((d) => ({ id: d.id, title: d.displayTitle, code: d.workCode })) });
+        continue;
+      }
+      const cm = group.folderName.match(/\b(RJ|VJ|BJ)\d{4,}\b/i);
       const fc = cm ? cm[0].toUpperCase() : null;
       const cn = group.folderPath.split('/')[0] || null;
       let ci: string | null = null;
@@ -92,10 +140,8 @@ export async function runImport(input: ImportInput): Promise<ImportResult> {
 
       for (const tc of group.tracks) {
         try {
-          const track = await prisma.track.create({ data: { workId: work.id, trackNumber: tc.trackNumber, title: tc.filename.replace(/\\.[^.]+$/, '') } });
-          // Preserve the FULL relative group path (all segments between work root and filename)
+          const track = await prisma.track.create({ data: { workId: work.id, trackNumber: tc.trackNumber, title: tc.filename.replace(/\.[^.]+$/, '') } });
           const parts = tc.relativePath.split('/');
-          // Full group path: everything between top-level segment and filename
           const groupPath = parts.length > 2 ? parts.slice(1, parts.length - 1).join('/') : null;
           const groupLabel = groupPath ? groupPath.split('/').map(ngLabel).join(' / ') : null;
           const sortKey = groupPath ? groupPath.split('/').map(ngSort).join(':') : null;
@@ -104,10 +150,8 @@ export async function runImport(input: ImportInput): Promise<ImportResult> {
         } catch (e) { errors.push(`曲目 "${tc.filename}": ${e instanceof Error ? e.message : String(e)}`); }
       }
 
-      // Subtitle files — create TrackSubtitle records
       for (const sf of group.subtitleFiles) {
         try {
-          // Create a dummy track to attach subtitle to, or use first track
           const firstTrack = await prisma.track.findFirst({ where: { workId: work.id }, orderBy: { trackNumber: 'asc' } });
           if (firstTrack) {
             await (prisma as any).trackSubtitle.create({

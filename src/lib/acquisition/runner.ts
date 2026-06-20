@@ -131,19 +131,20 @@ function recordProgress(jobId: string, path: string, status: string, downloaded:
   if (!pp) return;
   if (!pp.files[path]) pp.files[path] = { path, size, downloaded: 0, status };
   const f = pp.files[path];
+  const oldStatus = f.status;
   f.status = status;
   f.downloaded = downloaded;
   f.size = size || f.size;
   if (error) f.error = error;
 
-  if (isDone && f.status !== 'done') {
+  // Check oldStatus before we overwrote it
+  if (isDone && oldStatus !== 'done') {
     pp.done++;
-    if (f.status !== 'failed') pp.failed--;
     f.status = 'done';
   }
-  if (status === 'failed' && f.status !== 'failed') {
+  if (status === 'failed' && oldStatus !== 'failed') {
     pp.failed++;
-    pp.done = Math.max(0, pp.done - 1);
+    if (oldStatus === 'done') pp.done = Math.max(0, pp.done - 1);
   }
 
   // Flush immediately on done/failed. Throttle others to 500ms.
