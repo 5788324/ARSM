@@ -42,7 +42,7 @@ export default function ImportPage() {
         router.refresh();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : '未知错误');
     } finally {
       setLoading(false);
     }

@@ -51,7 +51,7 @@ export default function MetadataPage() {
         setResult(data);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : '未知错误');
     } finally {
       setLoading(false);
     }
