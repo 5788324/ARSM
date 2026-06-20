@@ -8,20 +8,17 @@ export default async function ContinueListeningPage() {
   if (!session) redirect('/login');
   const uid = session.user?.id || '';
 
-  const [history, totalListened, completedCount, topWorks] = await Promise.all([
+  const [history, totalRecords, distinctWorks, inProgress] = await Promise.all([
     prisma.listeningHistory.findMany({
       where: { userId: uid },
       orderBy: { listenedAt: 'desc' },
       take: 30,
       include: { work: { include: { circle: true, _count: { select: { tracks: true } }, tracks: { orderBy: { trackNumber: 'asc' }, take: 1 } } } },
     }),
-    prisma.listeningHistory.aggregate({ where: { userId: uid }, _sum: { positionSec: true } }),
-    prisma.listeningHistory.count({ where: { userId: uid, positionSec: 0 } }),
-    prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid }, _count: true, orderBy: { _count: { workId: 'desc' } }, take: 5 }),
+    prisma.listeningHistory.count({ where: { userId: uid } }),
+    prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid } }).then(r => r.length),
+    prisma.listeningHistory.count({ where: { userId: uid, positionSec: { gt: 0 } } }),
   ]);
-
-  const totalSec = totalListened._sum.positionSec || 0;
-  const fmtDur = (sec: number) => `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m`;
 
   const formatPosition = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 
@@ -34,16 +31,16 @@ export default async function ContinueListeningPage() {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <p className="text-xs text-zinc-500">总收听时长</p>
-          <p className="text-2xl font-bold">{fmtDur(totalSec)}</p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <p className="text-xs text-zinc-500">已听完</p>
-          <p className="text-2xl font-bold">{completedCount} 次</p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
           <p className="text-xs text-zinc-500">播放记录</p>
-          <p className="text-2xl font-bold">{history.length}+ 条</p>
+          <p className="text-2xl font-bold">{totalRecords}</p>
+        </div>
+        <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+          <p className="text-xs text-zinc-500">收听作品</p>
+          <p className="text-2xl font-bold">{distinctWorks}</p>
+        </div>
+        <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+          <p className="text-xs text-zinc-500">续听中</p>
+          <p className="text-2xl font-bold">{inProgress}</p>
         </div>
       </div>
 
