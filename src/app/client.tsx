@@ -64,10 +64,12 @@ export function HomeClient({ data }: { data: any }) {
             <div className="space-y-2">
               {listeningHistory.map((h: any) => (
                 <Link key={h.id} href={`/works/${h.workId}`} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 hover:shadow dark:border-zinc-800">
-                  <span className="text-zinc-400">♪</span>
+                  <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                    {h.work?.coverPath ? <img src={`/api/covers/${h.work.id}`} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-zinc-400">♪</div>}
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm truncate">{h.workId?.slice(-8)}</p>
-                    <p className="text-xs text-zinc-500">{h.positionSec > 0 ? `⏱ ${Math.floor(h.positionSec/60)}:${String(h.positionSec%60).padStart(2,'0')}` : '已完成'}</p>
+                    <p className="text-sm truncate">{h.work?.displayTitle || '未知作品'}</p>
+                    <p className="text-xs text-zinc-500">{h.positionSec > 0 ? `${Math.floor(h.positionSec/60)}:${String(h.positionSec%60).padStart(2,'0')}` : '已完成'}</p>
                   </div>
                 </Link>
               ))}

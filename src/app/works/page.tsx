@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
@@ -17,6 +17,7 @@ function WorksContent() {
   const [page, setPage] = useState(parseInt(sp.get('page') || '1'));
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const didMount = useRef(false);
 
   const fetchWorks = useCallback(async () => {
     setLoading(true);
@@ -35,8 +36,9 @@ function WorksContent() {
 
   useEffect(() => { fetchWorks(); }, [fetchWorks]);
 
-  // Sync state to URL after fetch
+  // Sync state to URL after fetch (skip initial mount)
   useEffect(() => {
+    if (!didMount.current) { didMount.current = true; return; }
     const params = new URLSearchParams();
     if (keyword) params.set('keyword', keyword);
     if (sort !== 'recent') params.set('sort', sort);

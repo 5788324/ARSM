@@ -25,6 +25,7 @@ export default async function WorkDetailPage({ params }: { params: Promise<{ id:
       workTags: { include: { tag: true } },
       workVAs: { include: { voiceActor: true } },
       workSources: true,
+      ratings: { where: { userId: session.user?.id }, select: { rating: true } },
     },
   });
 

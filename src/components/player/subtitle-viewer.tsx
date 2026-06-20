@@ -18,6 +18,7 @@ export function SyncedSubtitleViewer({ subId, fileName, allSubtitles, onClose }:
   const [loading, setLoading] = useState(true);
   const [activeSubId, setActiveSubId] = useState(subId);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const lastIdxRef = useRef(-1);
   const cuesRef = useRef<HTMLDivElement>(null);
   const { currentTime, seek } = usePlayer();
 
@@ -32,16 +33,18 @@ export function SyncedSubtitleViewer({ subId, fileName, allSubtitles, onClose }:
       .catch(() => setLoading(false));
   }, [activeSubId]);
 
-  // Find active cue by scanning cue time ranges
+  // Find active cue — use ref to avoid render loop
   useEffect(() => {
     if (!cues || !hasTiming) return;
     const idx = cues.findIndex(c => c.start <= currentTime && c.end >= currentTime);
-    if (idx !== activeIdx) setActiveIdx(idx);
-    if (idx >= 0 && cuesRef.current) {
-      const el = cuesRef.current.children[idx] as HTMLElement;
-      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (idx !== lastIdxRef.current) {
+      lastIdxRef.current = idx;
+      setActiveIdx(idx);
     }
-  }, [currentTime, cues, hasTiming, activeIdx]);
+    if (idx >= 0 && cuesRef.current && cuesRef.current.children[idx]) {
+      (cuesRef.current.children[idx] as HTMLElement).scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [currentTime, cues, hasTiming]);
 
   if (loading) return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}><div className="rounded-xl bg-white p-6 dark:bg-zinc-900">加载中...</div></div>;
 

@@ -13,9 +13,10 @@ export default async function HomePage() {
     prisma.work.count(),
     prisma.track.count(),
     prisma.listeningHistory.findMany({
-      where: { userId: session.user!.id! },
+      where: { userId: session.user?.id as string },
       orderBy: { listenedAt: 'desc' as const },
       take: 5,
+      include: { work: { select: { id: true, displayTitle: true, coverPath: true } } },
     }),
   ]);
 
