@@ -1,25 +1,30 @@
 @echo off
-title ARSM - 私人音频图书馆
+chcp 65001 >nul 2>&1
+title ARSM
 cd /d "G:\Hermes Agent\ARSM\ARSM"
 
 echo.
 echo ========================================
-echo     ARSM -- 私人音频图书馆
+echo     ARSM - Private Audio Library
 echo ========================================
 echo.
-echo 正在检查管理员账号...
+echo Seeding admin account...
 call node_modules\.bin\tsx.cmd prisma\seed.ts 2>nul
 
+echo Stopping old server (if any)...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3000.*LISTENING" 2^>nul') do taskkill /F /PID %%a 2>nul
+timeout /t 2 /nobreak >nul
+
 echo.
-echo 正在启动服务...
+echo Starting server...
 start http://localhost:3000
 
 echo.
 echo ========================================
-echo  浏览器已打开: http://localhost:3000
-echo  用户名: admin    密码: admin
+echo  Browser: http://localhost:3000
+echo  Login:   admin / admin
 echo ========================================
-echo  关闭此窗口即可停止服务
+echo  Close this window to stop the server
 echo ========================================
 echo.
 
