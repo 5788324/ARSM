@@ -77,10 +77,10 @@
 | `/` | SSR | 首页（统计 + 续听） | ✅ |
 | `/login` | SSR | 登录页 | ✅ |
 | `/works` | SSR | 作品库（需登录） | ⚠️ 搜索框死 |
-| `/works/[id]` | SSR | 作品详情 + 播放 | ⚠️ 少量英语 |
+| `/works/[id]` | SSR | 作品详情 + 分组播放 + 字幕 | ✅ |
 | `/favorites` | SSR | 收藏列表 | ⚠️ "tracks" |
 | `/admin` | SSR | 管理面板 | ✅ |
-| `/admin/acquisition` | CSR | 采集任务（新建+列表） | ✅ |
+| `/admin/acquisition` | CSR | 采集任务 + 进度条 | ✅ |
 | `/admin/import` | CSR | 手动导入 | ⚠️ 少量英语 |
 | `/admin/jobs` | CSR | 任务状态 | ✅ |
 | `/admin/metadata` | CSR | 元数据抓取 | ⚠️ 多处英语 |
@@ -128,24 +128,22 @@
 | 1 | `.env` | NEXTAUTH_SECRET 已加但需确认持久 |
 | 2 | `service.ts` | `scanDirectory` 默认按父目录分组，手动导入可能拆散 |
 
-## 四、功能缺口（vs asmr.one 竞品对标），ARSM 缺的功能
+## 四、功能缺口（vs asmr.one 竞品对标）
+
+Phase 4 已完成全局播放器/曲目分组/元数据自动匹配/字幕识别。剩余缺口：
 
 | 优先级 | 功能 | 说明 |
 |--------|------|------|
-| **P1** | 全局播放器 | 底部固定栏，切页不中断，自动续播 |
-| **P1** | 修复搜索 | /works 搜索框接 API |
-| **P1** | 标签展示 | Tag/WorkTag 模型已有，前端渲染 |
+| **P2** | 修复搜索 | /works 搜索框接 API |
 | **P2** | VA/社团点击筛选 | 点击声优名 → 该 VA 全部作品 |
-| **P2** | 作品列表分页 | 当前 `take: 50` 无翻页 |
 | **P2** | 评分系统 | 1-5 星 |
 | **P2** | "带字幕"筛选 | `hasSubtitle` 已有，加 filter |
-| **P2** | 文件树导航 | 替代扁平曲目列表 |
-| **P2** | 直接下载按钮 | `/api/tracks/:id/download` |
 | **P2** | 深色模式切换 | Tailwind dark: 已就绪 |
 | **P3** | 热门/最近 | 首页内容推荐 |
 | **P3** | 播放列表 | 队列管理 |
-| **P3** | 播放速度 | 0.5x/1x/2x |
-| **P4** | AI 字幕 | Whisper + LLM |
+| **P3** | 直接下载按钮 | `/api/tracks/:id/download` |
+| **P4** | AI 字幕翻译 | LLM API |
+| **P4** | 多源接入 | dlsite / hvdb |
 
 ---
 
