@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
-import { normalizeId, flattenNodes, downloadFileStream } from '@/lib/acquisition/asmrone';
+import { normalizeId, flattenNodes, downloadFileStream } from '@/lib/acquisition/providers/asmrone';
 import { mkdirSync, rmSync, existsSync, statSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -74,7 +74,7 @@ describe('flattenNodes', () => {
     expect(result).toHaveLength(1);
     expect(result[0].path).toBe('');
     expect(result[0].size).toBe(0);
-    expect(result[0].mediaDownloadUrl).toBe('');
+    expect(result[0].downloadUrl).toBe('');
   });
 });
 
@@ -85,7 +85,6 @@ describe('downloadFileStream', () => {
   afterAll(() => { try { rmSync(testDir, { recursive: true, force: true }); } catch {} });
 
   it('streams data to disk without buffering in memory', async () => {
-    // Mock fetch to return a known body
     const testData = Buffer.from('hello streaming world! '.repeat(100));
     const readable = new ReadableStream({
       start(controller) {
