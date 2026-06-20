@@ -1,7 +1,5 @@
 /**
- * Acquisition job runner — orchestrates inspect → download → import → postprocess.
- *
- * Uses AcquisitionJob as backing store. Import step reuses the shared import service.
+ * Acquisition job runner — Phase 4: per-file progress + auto-metadata.
  */
 
 import { prisma } from '@/lib/prisma';
@@ -9,7 +7,6 @@ import { getProvider, findProvider } from './registry';
 import { runImport } from '@/lib/import/service';
 import { PostprocessRequest } from './types';
 
-/** Create and start an acquisition job. Returns immediately. */
 export async function createAcquisitionJob(params: {
   providerId?: string;
   input: string;
@@ -27,170 +24,181 @@ export async function createAcquisitionJob(params: {
   }
 
   const job = await prisma.acquisitionJob.create({
-    data: {
-      providerId,
-      input,
-      normalizedSourceId: input,
-      targetDir,
-      status: 'pending',
-    },
+    data: { providerId, input, normalizedSourceId: input, targetDir, status: 'pending' },
   });
 
-  // Start async execution (fire-and-forget)
   runAcquisitionJob(job.id, { providerId, input, targetDir, autoImport, postprocess }).catch(() => {});
-
   return { id: job.id, status: 'pending' };
 }
 
-/** Get a job by ID */
 export async function getAcquisitionJob(id: string) {
   return prisma.acquisitionJob.findUnique({ where: { id } });
 }
 
-/** List recent jobs */
 export async function listAcquisitionJobs(limit = 20) {
-  return prisma.acquisitionJob.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: limit,
-  });
+  return prisma.acquisitionJob.findMany({ orderBy: { createdAt: 'desc' }, take: limit });
 }
-
-// ─── Internal async runner ──────────────────────────────
 
 async function runAcquisitionJob(
   jobId: string,
-  opts: {
-    providerId: string;
-    input: string;
-    targetDir: string;
-    autoImport: boolean;
-    postprocess?: PostprocessRequest;
-  },
+  opts: { providerId: string; input: string; targetDir: string; autoImport: boolean; postprocess?: PostprocessRequest },
 ) {
   try {
-    // Step 1: Resolve provider
     const provider = getProvider(opts.providerId);
     if (!provider) {
-      await prisma.acquisitionJob.update({
-        where: { id: jobId },
-        data: { status: 'failed', errorJson: JSON.stringify({ message: `未知 provider: ${opts.providerId}` }), finishedAt: new Date() },
-      });
+      await failJob(jobId, `未知 provider: ${opts.providerId}`);
       return;
     }
 
-    // Step 2: Inspect
-    await prisma.acquisitionJob.update({
-      where: { id: jobId },
-      data: { status: 'inspecting', currentStep: 'inspect', startedAt: new Date() },
-    });
-
+    // Step 1: Inspect
+    await updateJob(jobId, { status: 'inspecting', currentStep: 'inspect', startedAt: new Date() });
     const inspectResult = await provider.inspect(opts.input);
-
-    await prisma.acquisitionJob.update({
-      where: { id: jobId },
-      data: {
-        normalizedSourceId: inspectResult.sourceId,
-        progressJson: JSON.stringify({
-          inspect: { fileCount: inspectResult.fileCount, totalSize: inspectResult.totalSize },
-        }),
-      },
+    await updateJob(jobId, {
+      normalizedSourceId: inspectResult.sourceId,
+      progressJson: JSON.stringify({
+        inspect: { fileCount: inspectResult.fileCount, totalSize: inspectResult.totalSize, title: inspectResult.title, hasSubtitle: inspectResult.hasSubtitle },
+        download: { totalFiles: inspectResult.fileCount, doneFiles: 0, failedFiles: 0, bytesDownloaded: 0, totalBytes: inspectResult.totalSize, percent: 0, currentFile: null, files: [] },
+      }),
     });
 
-    // If autoImport is false, stop after inspect (file tree only)
     if (!opts.autoImport) {
-      await prisma.acquisitionJob.update({
-        where: { id: jobId },
-        data: { status: 'done', currentStep: null, finishedAt: new Date() },
-      });
+      await updateJob(jobId, { status: 'done', currentStep: null, finishedAt: new Date() });
       return;
     }
 
-    // Step 3: Download
-    await prisma.acquisitionJob.update({
-      where: { id: jobId },
-      data: { status: 'downloading', currentStep: 'download' },
-    });
+    // Step 2: Download — with per-file progress hooks
+    await updateJob(jobId, { status: 'downloading', currentStep: 'download' });
 
-    const downloadResult = await provider.download(opts.input, opts.targetDir);
+    let downloadErrors: string[] = [];
+    let totalDownloaded = 0;
 
-    await prisma.acquisitionJob.update({
-      where: { id: jobId },
-      data: {
-        progressJson: JSON.stringify({
-          inspect: { fileCount: inspectResult.fileCount, totalSize: inspectResult.totalSize },
-          download: { totalFiles: downloadResult.total, doneFiles: downloadResult.done, failedFiles: downloadResult.failed, bytesDownloaded: downloadResult.bytesDownloaded },
-        }),
+    const downloadResult = await provider.download(opts.input, opts.targetDir, {
+      onFileStart: (path) => {
+        updateJobProgress(jobId, inspectResult, { path, size: 0, downloaded: 0, status: 'downloading' });
+      },
+      onFileProgress: (path, downloaded, size) => {
+        totalDownloaded += 8192; // approximate per chunk
+        updateJobProgress(jobId, inspectResult, { path, size, downloaded, status: 'downloading' });
+      },
+      onFileDone: (path) => {
+        updateJobProgress(jobId, inspectResult, { path, status: 'done' }, true);
+      },
+      onFileError: (path, error) => {
+        downloadErrors.push(`${path}: ${error}`);
+        updateJobProgress(jobId, inspectResult, { path, status: 'failed', error });
       },
     });
 
-    // Step 4: Import (reuses shared import service)
-    let importResult: { status: string; foundWorks: number; foundTracks: number; reviewCount: number; errors: string[] } = {
-      status: 'skipped', foundWorks: 0, foundTracks: 0, reviewCount: 0, errors: [],
-    };
+    // Step 3: Import
+    let importWorks = 0, importTracks = 0, reviewCount = 0;
+    const importErrors: string[] = [];
 
     if (opts.autoImport) {
-      await prisma.acquisitionJob.update({
-        where: { id: jobId },
-        data: { status: 'importing', currentStep: 'import' },
-      });
-
+      await updateJob(jobId, { status: 'importing', currentStep: 'import' });
       try {
         const scanRoot = `${opts.targetDir}/${inspectResult.sourceId}`;
-        importResult = await runImport({ rootPath: scanRoot, groupByTop: true });
+        const importResult = await runImport({ rootPath: scanRoot, groupByTop: true });
+        importWorks = importResult.foundWorks;
+        importTracks = importResult.foundTracks;
+        reviewCount = importResult.reviewCount;
+        importErrors.push(...importResult.errors);
       } catch (err) {
-        importResult.errors.push(err instanceof Error ? err.message : '导入失败');
+        importErrors.push(err instanceof Error ? err.message : '导入失败');
       }
     }
 
-    // Step 5: Postprocess (stub)
+    // Step 4: Postprocess (stub)
     if (opts.postprocess) {
-      await prisma.acquisitionJob.update({
-        where: { id: jobId },
-        data: { status: 'postprocessing', currentStep: 'postprocess' },
-      });
+      await updateJob(jobId, { status: 'postprocessing', currentStep: 'postprocess' });
     }
 
     // Final status
     const hasDownloadErrors = downloadResult.failed > 0;
-    const hasImportErrors = importResult.errors.length > 0;
-    const hasReview = importResult.reviewCount > 0;
-
-    const finalStatus = hasReview
-      ? 'review'
-      : hasDownloadErrors || hasImportErrors
-        ? 'done_with_errors'
-        : 'done';
-
-    const progress = {
-      inspect: { fileCount: inspectResult.fileCount, totalSize: inspectResult.totalSize },
-      download: { totalFiles: downloadResult.total, doneFiles: downloadResult.done, failedFiles: downloadResult.failed, bytesDownloaded: downloadResult.bytesDownloaded },
-      import: { foundWorks: importResult.foundWorks, foundTracks: importResult.foundTracks, reviewCount: importResult.reviewCount, errors: importResult.errors },
-      postprocess: opts.postprocess ? { status: 'stub' } : undefined,
-    };
+    const hasImportErrors = importErrors.length > 0;
+    const hasReview = reviewCount > 0;
+    const finalStatus = hasReview ? 'review' : hasDownloadErrors || hasImportErrors ? 'done_with_errors' : 'done';
 
     const errorPayload: Record<string, unknown> = {};
-    if (downloadResult.errors.length > 0) errorPayload.download = downloadResult.errors;
-    if (importResult.errors.length > 0) errorPayload.import = importResult.errors;
+    if (downloadErrors.length > 0) errorPayload.download = downloadErrors;
+    if (importErrors.length > 0) errorPayload.import = importErrors;
 
-    await prisma.acquisitionJob.update({
-      where: { id: jobId },
-      data: {
-        status: finalStatus,
-        currentStep: null,
-        progressJson: JSON.stringify(progress),
-        resultJson: JSON.stringify({ download: { done: downloadResult.done, failed: downloadResult.failed }, import: { foundWorks: importResult.foundWorks, foundTracks: importResult.foundTracks } }),
-        errorJson: Object.keys(errorPayload).length > 0 ? JSON.stringify(errorPayload) : null,
-        finishedAt: new Date(),
-      },
+    await updateJob(jobId, {
+      status: finalStatus,
+      currentStep: null,
+      resultJson: JSON.stringify({
+        download: { done: downloadResult.done, failed: downloadResult.failed },
+        import: { foundWorks: importWorks, foundTracks: importTracks },
+      }),
+      errorJson: Object.keys(errorPayload).length > 0 ? JSON.stringify(errorPayload) : null,
+      finishedAt: new Date(),
     });
   } catch (err) {
-    await prisma.acquisitionJob.update({
-      where: { id: jobId },
-      data: {
-        status: 'failed',
-        errorJson: JSON.stringify({ message: err instanceof Error ? err.message : 'Unknown error' }),
-        finishedAt: new Date(),
-      },
-    });
+    await failJob(jobId, err instanceof Error ? err.message : 'Unknown error');
   }
+}
+
+// ─── Helpers ────────────────────────────────────────────
+
+async function updateJob(id: string, data: Record<string, unknown>) {
+  await prisma.acquisitionJob.update({ where: { id }, data });
+}
+
+async function failJob(id: string, message: string) {
+  await prisma.acquisitionJob.update({
+    where: { id },
+    data: { status: 'failed', errorJson: JSON.stringify({ message }), finishedAt: new Date() },
+  });
+}
+
+/** Throttled per-file progress update — writes to progressJson.files array */
+let progressThrottle: Record<string, ReturnType<typeof setTimeout>> = {};
+
+async function updateJobProgress(
+  jobId: string,
+  inspect: { fileCount: number; totalSize: number; title?: string; hasSubtitle?: boolean },
+  file: { path: string; size?: number; downloaded?: number; status: string; error?: string },
+  incrementDone = false,
+) {
+  // Throttle: only write every 500ms per job
+  const key = `progress-${jobId}`;
+  if (progressThrottle[key]) return;
+  progressThrottle[key] = setTimeout(() => { delete progressThrottle[key]; }, 500);
+
+  const job = await getAcquisitionJob(jobId);
+  if (!job) return;
+
+  let progress: Record<string, unknown> = {};
+  try { progress = JSON.parse(job.progressJson || '{}'); } catch {}
+  const dl = (progress.download as Record<string, unknown>) || {};
+
+  const files = (dl.files as Array<Record<string, unknown>>) || [];
+  const idx = files.findIndex((f) => f.path === file.path);
+  const entry = {
+    path: file.path,
+    size: file.size || (idx >= 0 ? files[idx].size : 0),
+    downloaded: file.downloaded || 0,
+    status: file.status,
+    error: file.error,
+    percent: file.size ? Math.round((file.downloaded || 0) / file.size * 100) : 0,
+  };
+
+  if (idx >= 0) files[idx] = entry;
+  else files.push(entry);
+
+  // Keep only last 100 files
+  const trimmed = files.slice(-100);
+
+  const doneCount = trimmed.filter((f) => f.status === 'done').length;
+  const failedCount = trimmed.filter((f) => f.status === 'failed').length;
+
+  progress.download = {
+    ...dl,
+    doneFiles: incrementDone ? (Number(dl.doneFiles || 0) + 1) : dl.doneFiles,
+    failedFiles: failedCount,
+    currentFile: file.status === 'downloading' ? file.path : dl.currentFile,
+    percent: inspect.fileCount > 0 ? Math.round((Number(dl.doneFiles || 0) / inspect.fileCount) * 100) : 0,
+    files: trimmed,
+  };
+
+  await updateJob(jobId, { progressJson: JSON.stringify(progress) });
 }

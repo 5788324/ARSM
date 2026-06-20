@@ -79,9 +79,12 @@ model TrackFile {
   id             String   @id @default(cuid())
   trackId        String
   repositoryId   String
-  filePath       String   // relative path within repository
+  filePath       String
   fileSize       Int?
   isAvailable    Boolean  @default(true)
+  groupPath      String?  // relative group path, e.g. "mp3", "wav", "SEあり"
+  groupLabel     String?  // display group name
+  sortKey        String?  // sort key for ordering groups
   createdAt      DateTime @default(now())
 
   track      Track               @relation(fields: [trackId], references: [id], onDelete: Cascade)
@@ -254,4 +257,21 @@ model AcquisitionJob {
   finishedAt         DateTime?
 
   @@map("acquisition_jobs")
+}
+
+// ─── Subtitle / Text ────────────────────────────────────
+
+model TrackSubtitle {
+  id           String   @id @default(cuid())
+  trackId      String
+  repositoryId String
+  filePath     String
+  kind         String   // vtt, srt, lrc, txt, pdf, transcript
+  language     String?  // ja, zh-CN
+  label        String?  // 原文 / 中文字幕 / 台本
+  isDefault    Boolean  @default(false)
+  content      String?  // parsed text for search
+  createdAt    DateTime @default(now())
+
+  @@map("track_subtitles")
 }
