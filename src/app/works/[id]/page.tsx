@@ -37,5 +37,5 @@ export default async function WorkDetailPage({ params }: { params: Promise<{ id:
 
   if (!work) notFound();
 
-  return <WorkClient work={JSON.parse(JSON.stringify({ ...work, trackSubtitles: subtitles }))} />;
+  return <WorkClient work={JSON.parse(JSON.stringify({ ...work, trackSubtitles: subtitles }))} isAdmin={(session.user as any)?.isAdmin === true} />;
 }

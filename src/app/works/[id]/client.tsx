@@ -9,7 +9,7 @@ import Link from 'next/link';
 interface TrackFile { id: string; filePath: string; fileSize: number | null; isAvailable: boolean; groupPath: string | null; groupLabel: string | null; sortKey: string | null; repository: { id: string; name: string; rootPath: string }; }
 interface Track { id: string; trackNumber: number; title: string; durationSec: number | null; mimeType: string | null; bitrateKbps: number | null; trackFiles: TrackFile[]; }
 
-export default function WorkClient({ work }: { work: any }) {
+export default function WorkClient({ work, isAdmin }: { work: any; isAdmin: boolean }) {
   const { play, addToQueue, currentIndex, playing, queue } = usePlayer();
   const [subViewer, setSubViewer] = useState<{ id: string; name: string } | null>(null);
   const [showEditor, setShowEditor] = useState(false);
@@ -101,7 +101,7 @@ export default function WorkClient({ work }: { work: any }) {
       </div>
 
       {subViewer && <SyncedSubtitleViewer subId={subViewer.id} fileName={subViewer.name} allSubtitles={subtitleFiles} onClose={() => setSubViewer(null)} />}
-      {showEditor && <MetadataEditor work={work} onSaved={() => setShowEditor(false)} />}
+      {showEditor && <MetadataEditor work={work} isAdmin={isAdmin} onSaved={() => setShowEditor(false)} />}
     </div>
   );
 }

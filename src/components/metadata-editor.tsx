@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function MetadataEditor({ work, onSaved }: { work: any; onSaved: () => void }) {
+export function MetadataEditor({ work, isAdmin, onSaved }: { work: any; isAdmin: boolean; onSaved: () => void }) {
   const [title, setTitle] = useState(work.displayTitle || '');
   const [origTitle, setOrigTitle] = useState(work.originalTitle || '');
   const [release, setRelease] = useState(work.releaseDate || '');
@@ -56,14 +56,18 @@ export function MetadataEditor({ work, onSaved }: { work: any; onSaved: () => vo
               {rating > 0 && <button onClick={() => setRating(0)} className="ml-2 text-xs text-zinc-400 hover:text-red-500">清除</button>}
             </div>
           </div>
+          {isAdmin && (
+            <>
           <div className="border-t border-zinc-200 dark:border-zinc-800 my-3" />
           <div><label className="text-xs text-zinc-500">标题（管理员）</label><input value={title} onChange={e => setTitle(e.target.value)} className="mt-1 block w-full rounded border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800" /></div>
           <div><label className="text-xs text-zinc-500">原标题（管理员）</label><input value={origTitle} onChange={e => setOrigTitle(e.target.value)} className="mt-1 block w-full rounded border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800" /></div>
           <div><label className="text-xs text-zinc-500">发售日（管理员）</label><input value={release} onChange={e => setRelease(e.target.value)} className="mt-1 block w-full rounded border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-800" /></div>
+            </>
+          )}
         </div>
-        <p className="mt-3 text-xs text-zinc-400">管理员字段仅管理员可写，保存时如无权限会提示</p>
+        {isAdmin && <p className="mt-3 text-xs text-zinc-400">管理员字段仅管理员可写，保存时如无权限会提示</p>}
         <div className="mt-5 flex gap-2">
-          <button onClick={() => save(true)} disabled={saving} className="flex-1 rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">{saving ? '保存中...' : '重新抓取 + 保存'}</button>
+          {isAdmin && <button onClick={() => save(true)} disabled={saving} className="flex-1 rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">{saving ? '保存中...' : '重新抓取 + 保存'}</button>}
           <button onClick={() => save(false)} disabled={saving} className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900">{saving ? '...' : '保存'}</button>
         </div>
       </div>
