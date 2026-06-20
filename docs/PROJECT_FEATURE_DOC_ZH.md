@@ -1,93 +1,83 @@
-# ARSM 项目功能文档
+﻿# ARSM 项目功能文档
 
-日期：2026-06-20 | 最新提交：ee55c58 | Phase 4 已完成
-
-> 定位：评审材料。供 Codex 审查使用，非唯一交接文档。交接见 docs/PROJECT_HANDOFF_ZH.md。
+日期：2026-06-21 | 最新提交：13474d2 | Phase 6 已完成
 
 ---
 
 ## 一、项目概览
 
-ARSM — 私人音频图书馆。自动从 asmr.one 采集同人音声作品，本地私有化存储，Web 端播放管理。
+ARSM 是一个私人音频图书馆，目标是把本地音声资源与 asmr.one 采集能力结合起来，形成“可采集、可导入、可搜索、可播放、可续听、可评分、可管理”的长期使用系统。
 
 | 项目 | 信息 |
 |------|------|
 | 仓库 | github.com/5788324/ARSM |
 | 技术栈 | Next.js 16 + TypeScript + Prisma 5 + SQLite + NextAuth v5 + Tailwind 4 |
-| 测试 | 43/43 通过 (7 个测试文件) |
-| 构建 | 通过 |
+| 当前阶段 | Phase 6 已完成 |
+| 当前重点 | Phase 7 打磨与扩展 |
 
 ---
 
 ## 二、已实现功能
 
-### 2.1 核心采集链路
+### 2.1 采集与导入
+- asmr.one Provider
+- AcquisitionJob + runner
+- inspect → download → import → metadata 全链路
+- 文件级下载进度
+- 本地文件夹导入
+- 重复检测与 review
 
-用户输入 RJ 编号，后台异步任务：inspect → download → import → metadata → 入库
+### 2.2 元数据
+- 自动补全 asmr.one 元数据
+- 圈子 / 声优 / 标签关联
+- 管理员手动编辑标题、原标题、发售日
+- 管理员手动重抓 asmr.one
 
-| 模块 | 状态 |
-|------|------|
-| Provider 注册中心 + 接口 | 完成 |
-| asmr.one Provider | 完成 |
-| Runner 编排器 | 完成 |
-| AcquisitionJob 模型 | 完成 |
-| 统一 API /api/acquisition/jobs | 完成 |
-| 采集后台页 /admin/acquisition | 完成 |
+### 2.3 播放与字幕
+- 全局播放器
+- 队列 / 循环 / 倍速 / 续播
+- 曲目自动分组
+- 文本字幕阅读
+- `.lrc/.vtt/.srt` 时间轴解析
+- 跟播高亮与点击跳转
 
-采集链路特性：流式下载、3 次重试 + 超时、一次点击全自动、目录白名单、groupByTop 合并、文件级进度条。
+### 2.4 浏览与用户数据
+- 作品库搜索、排序、筛选、分页
+- URL 状态同步
+- 社团 / 声优 / 标签关系页
+- 首页最近添加、最近采集、最近播放、统计
+- 收藏
+- 收听历史
+- 个人评分（按用户独立）
 
-### 2.2 导入系统
-
-共享 import service + 重复检测 (CJK 滑窗) + 子文件夹分组 (groupPath/groupLabel) + 字幕识别 (.vtt/.srt/.lrc/.txt/.pdf) + review 队列。
-
-### 2.3 播放器
-
-全局底部播放器、倍速 (0.75x-2x)、自动连续播放、曲目按分组展示。
-
-### 2.4 元数据自动匹配
-
-采集后自动从 asmr.one 补全：标题、发售日、社团、标签、声优。
-
-### 2.5 页面清单
-
-| 路由 | 功能 | 状态 |
-|------|------|------|
-| / | 首页 | 完成 |
-| /works | 作品库 | 搜索框待修复 |
-| /works/[id] | 详情 + 分组播放 + 字幕 | 完成 |
-| /admin/acquisition | 采集任务 + 进度条 | 完成 |
-| /admin/import | 手动导入 | 完成 |
-| /admin/metadata | 元数据 | 完成 |
-
-### 2.6 数据库
-
-17 个模型 (SQLite)：User, Work, Track, TrackFile, Circle, VoiceActor, Tag, WorkTag, WorkVoiceActor, WorkSource, StorageRepository, ListeningHistory, Favorite, ImportJob, MetadataJob, AcquisitionJob, TrackSubtitle。
-
-### 2.7 启动方式
-
-双击 启动ARSM.bat，浏览器打开 localhost:3000，用户名 admin 密码 admin。
+### 2.5 部署与运行
+- Windows 启动/停止批处理
+- Docker 基础支持
+- 深色模式
 
 ---
 
-## 三、已知问题
+## 三、当前限制
 
-| 优先级 | 问题 |
-|--------|------|
-| P1 | /works 搜索框无功能 |
-| P1 | durationSec 除零风险 |
-| P1 | metadata 页面 DLsite 选项无效 |
-| P2 | 7 处英语 UI 残留 |
+- 采集来源仍以 asmr.one 为主
+- 普通用户界面仍可进一步隐藏管理员字段
+- 字幕暂不支持翻译、双语、AI 生成
+- 统计能力还不够完整
+- 尚无 Android / 桌面打包壳
 
 ---
 
-## 四、功能缺口（Phase 4 完成后）
+## 四、Phase 7 建议方向
 
-| 优先级 | 功能 |
-|--------|------|
-| P2 | 修复搜索 |
-| P2 | VA/社团点击筛选 |
-| P2 | 评分系统 |
-| P2 | 深色模式切换 |
-| P3 | 播放列表管理 |
-| P4 | AI 字幕翻译 |
-| P4 | 多源接入 (dlsite/hvdb) |
+### P1
+- 普通用户 / 管理员界面分离
+- 为 Phase 6 新能力补测试与浏览器级验收
+- 收听统计深化
+
+### P2
+- 第二采集源或第二元数据来源预留 / 接入
+- 继续打磨首页、作品页、继续收听页
+
+### P3
+- 字幕翻译、双语显示、AI 字幕生成
+- PWA / Android / 桌面壳评估
