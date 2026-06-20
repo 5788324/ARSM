@@ -49,13 +49,13 @@ export default function AcquisitionPage() {
         body: JSON.stringify({ action: mode, input, targetDir: mode === 'download' ? targetDir : undefined }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Request failed');
+      const resp = await res.json();
+      if (!resp.ok) throw new Error(resp.error || '请求失败');
 
       if (mode === 'inspect') {
-        setResult(data);
+        setResult(resp.data);
       } else {
-        setDownloadResult(data);
+        setDownloadResult(resp.data);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误');

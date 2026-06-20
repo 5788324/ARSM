@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { normalizeId, flattenNodes, downloadFileStream } from '@/lib/acquisition/asmrone';
 import { mkdirSync, rmSync, existsSync, statSync } from 'fs';
 import { join } from 'path';
@@ -25,8 +25,8 @@ describe('normalizeId', () => {
   it('rejects invalid input', () => {
     expect(() => normalizeId('')).toThrow();
     expect(() => normalizeId('hello')).toThrow();
-    expect(() => normalizeId('12345')).toThrow(); // too few digits
-    expect(() => normalizeId('RJ12345')).toThrow(); // 5 digits
+    expect(() => normalizeId('12345')).toThrow();
+    expect(() => normalizeId('RJ12345')).toThrow();
   });
 
   it('rejects unknown prefixes', () => {
@@ -69,9 +69,7 @@ describe('flattenNodes', () => {
   });
 
   it('handles nodes with missing optional fields', () => {
-    const nodes = [
-      { title: '', type: 'audio' },
-    ];
+    const nodes = [{ title: '', type: 'audio' }];
     const result = flattenNodes(nodes);
     expect(result).toHaveLength(1);
     expect(result[0].path).toBe('');
@@ -83,20 +81,29 @@ describe('flattenNodes', () => {
 describe('downloadFileStream', () => {
   const testDir = join(tmpdir(), 'arsm-dl-test-' + Date.now());
 
-  afterAll(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch {}
-  });
+  beforeAll(() => { mkdirSync(testDir, { recursive: true }); });
+  afterAll(() => { try { rmSync(testDir, { recursive: true, force: true }); } catch {} });
 
-  it('writes file to disk via streaming', async () => {
-    // Download a small known-good file from asmr.one
-    // We use the README.txt from a known work which is ~4KB
-    const url = 'https://raw.kiko-play-niptan.one/media/download/daily/2026-06-07/RJ01584624/Readme.txt';
+  it('streams data to disk without buffering in memory', async () => {
+    // Mock fetch to return a known body
+    const testData = Buffer.from('hello streaming world! '.repeat(100));
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(testData);
+        controller.close();
+      },
+    });
 
-    const destPath = join(testDir, 'Readme.txt');
-    await downloadFileStream(url, destPath);
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      body: readable,
+    });
+
+    const destPath = join(testDir, 'streamed.bin');
+    await downloadFileStream('http://mock/stream', destPath);
 
     expect(existsSync(destPath)).toBe(true);
     const stat = statSync(destPath);
-    expect(stat.size).toBeGreaterThan(0);
-  }, 30000);
+    expect(stat.size).toBe(testData.length);
+  });
 });

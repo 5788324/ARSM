@@ -272,12 +272,16 @@ export async function downloadFileStream(
 
 // ─── Download work ───────────────────────────────────────
 
-/** Validate targetDir is within allowed roots */
+/** Validate targetDir is strictly within allowed roots */
 function validateTargetDir(targetDir: string): string {
   const resolved = resolve(normalize(targetDir));
+
+  // Normalize to ensure trailing separator for boundary check
+  const normalizedTarget = resolved.replace(/\\/g, '/').replace(/\/+$/, '') + '/';
+
   const allowed = ALLOWED_ROOTS.some((root) => {
-    const resolvedRoot = resolve(normalize(root));
-    return resolved.startsWith(resolvedRoot);
+    const resolvedRoot = resolve(normalize(root)).replace(/\\/g, '/').replace(/\/+$/, '') + '/';
+    return normalizedTarget.startsWith(resolvedRoot);
   });
 
   if (!allowed) {
