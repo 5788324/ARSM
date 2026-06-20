@@ -1,0 +1,38 @@
+[31m[auth][error][0m CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+    at fu (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:40971)
+    at async fD (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:50551)
+    at async fF (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:54801)
+    at async fQ (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:60101)
+    at async f (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_1wdaxne._.js:1:350)
+    at async rF (G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:16:2271)
+    at async G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:16:671
+    at async rU (G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:14:14943)
+    at async lH (G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:51:28284)
+    at async o (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\1h0h_next_dist_esm_build_templates_app-page_0z721a-.js:1:10903)
+[31m[auth][error][0m CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+    at fu (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:40971)
+    at async fD (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:50551)
+    at async fF (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:54801)
+    at async fQ (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_028ucwq._.js:414:60101)
+    at async f (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\_1wdaxne._.js:1:350)
+    at async rF (G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:16:2271)
+    at async G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:16:671
+    at async rU (G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:14:14943)
+    at async lH (G:\Hermes Agent\ARSM\ARSM\node_modules\.pnpm\next@16.2.9_@babel+core@7.2_ff5cf81a912fbaa1808ad69d3fec28b2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:51:28284)
+    at async o (G:\Hermes Agent\ARSM\ARSM\.next\server\chunks\ssr\1h0h_next_dist_esm_build_templates_app-page_0z721a-.js:1:10903)
+TypeError: Invalid state: Controller is already closed
+    at ignore-listed frames {
+  code: 'ERR_INVALID_STATE'
+}
+⨯ uncaughtException:  TypeError: Invalid state: Controller is already closed
+    at ignore-listed frames {
+  code: 'ERR_INVALID_STATE'
+}
+TypeError: Invalid state: Controller is already closed
+    at ignore-listed frames {
+  code: 'ERR_INVALID_STATE'
+}
+⨯ uncaughtException:  TypeError: Invalid state: Controller is already closed
+    at ignore-listed frames {
+  code: 'ERR_INVALID_STATE'
+}
