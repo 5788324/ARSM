@@ -42,10 +42,18 @@ async function runAcquisitionJob(jobId: string, opts: { providerId: string; inpu
       onFileStart: (path) => { recordProgress(jobId, path, 'downloading', 0, 0); },
       onFileProgress: (path, downloaded, size) => {
         const pp = pendingProgress[jobId];
-        if (pp) pp.bytes += Math.min(8192, size - (pp.files[path]?.downloaded || 0));
+        if (pp) {
+          const prev = pp.files[path]?.downloaded || 0;
+          if (downloaded > prev) pp.bytes += (downloaded - prev);
+        }
         recordProgress(jobId, path, 'downloading', downloaded, size);
       },
-      onFileDone: (path) => { recordProgress(jobId, path, 'done', 0, 0, true); },
+      onFileDone: (path) => {
+        const pp = pendingProgress[jobId];
+        const f = pp?.files[path];
+        const sz = f?.size || 0;
+        recordProgress(jobId, path, 'done', sz, sz, true);
+      },
       onFileError: (path, error) => { recordProgress(jobId, path, 'failed', 0, 0, false, error); },
     });
 
