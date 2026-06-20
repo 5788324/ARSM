@@ -1,175 +1,86 @@
-﻿# ARSM 项目归档与交接总表
+﻿# ARSM 项目交接文档
 
-日期：2026-06-20
-版本：v1.0.0
-仓库：`https://github.com/5788324/ARSM`
-发布页：[ARSM v1.0.0](https://github.com/5788324/ARSM/releases/tag/v1.0.0)
+日期：2026-06-20 | 提交：`bd396ec`
 
-## 1. 项目一句话定义
+---
 
-ARSM 是一个给个人使用的私人 ASMR / 音频媒体库系统，支持本地导入、网页播放、元数据补录、重复审查，以及从 `asmr.one` 任务化采集并自动导入。
+## 当前项目状态
 
-## 2. 当前完成状态
+ARSM 已完成核心采集链路（asmr.one → 本地 → 导入），处于 **MVP+ 阶段**。
 
-当前 `v1.0.0` 已完成：
+### ✅ 已稳定
 
-- 本地音声目录导入
-- 作品 / 曲目浏览与播放
-- 收听进度与收藏
-- 元数据补录
-- 重复作品审查与合并
-- `asmr.one` provider
-- acquisition 任务化
-- provider registry
-- import 共享 service
-- admin 采集任务视图
-- acquisition 流程测试
-- acquisition 架构文档
+- 采集系统：provider registry + runner + AcquisitionJob
+- 导入系统：共享 import service + 重复检测 + review 队列
+- 认证：admin/admin，JWT session 持久化
+- 数据库：SQLite，15 模型
+- 测试：43/43 通过
+- 构建：零错误
 
-## 3. 关键入口页面
+### ⚠️ 已知限制
 
-### 前台
+- 播放器简陋（原生 `<audio>`，无全局播放器）
+- 曲目扁平列表（无子文件夹分组）
+- 元数据需手动 fetch/apply
+- 字幕系统未实现
+- 12 处英语 UI 残留
 
-- `/`
-- `/works`
-- `/works/[id]`
-- `/favorites`
-- `/login`
+---
 
-### 后台
+## 启动方式
 
-- `/admin`
-- `/admin/repositories`
-- `/admin/import`
-- `/admin/acquisition`
-- `/admin/jobs`
-- `/admin/duplicates`
-- `/admin/metadata`
+```
+双击 启动ARSM.bat
+  → seed admin 账号
+  → 启动 dev server
+  → 打开 http://localhost:3000
+  → 用户名: admin  密码: admin
 
-## 4. acquisition 当前工作方式
-
-统一入口：
-
-- `POST /api/acquisition/jobs`
-- `GET /api/acquisition/jobs`
-- `GET /api/acquisition/providers`
-
-当前流程：
-
-1. 创建 acquisition job
-2. provider `inspect`
-3. provider `download`
-4. `runImport()` 自动导入
-5. 写回 `AcquisitionJob`
-
-兼容路由仍保留：
-
-- `/api/acquisition/asmrone`
-
-但它只是兼容旧调用，新逻辑应走统一 jobs API。
-
-## 5. 关键代码位置
-
-### acquisition
-
-- `src/lib/acquisition/types.ts`
-- `src/lib/acquisition/registry.ts`
-- `src/lib/acquisition/runner.ts`
-- `src/lib/acquisition/providers/asmrone.ts`
-- `src/app/api/acquisition/jobs/route.ts`
-- `src/app/api/acquisition/providers/route.ts`
-- `src/app/api/acquisition/asmrone/route.ts`
-- `src/app/admin/acquisition/page.tsx`
-
-### import
-
-- `src/lib/import/service.ts`
-- `src/app/api/import/route.ts`
-
-### 数据模型
-
-- `prisma/schema.prisma`
-
-## 6. 关键文档入口
-
-### 面向使用
-
-- `README.md`
-- `docs/quick-start-zh.md`
-- `docs/user-guide-zh.md`
-- `docs/release-v1.0.0.md`
-
-### 面向开发/接手
-
-- `docs/acquisition-architecture.md`
-- `docs/acquisition-provider-interface.md`
-- `docs/acquisition-admin-workflow.md`
-
-### 审查与路线资料
-
-- `ARSM_NEXT_PHASE.md`
-- `PROJECT_PLAN.md`
-- `WORKLIST.md`
-- `REVIEW_FIXLIST.md`
-
-## 7. 当前质量状态
-
-发布时已确认：
-
-- `typecheck` 通过
-- `test` 通过
-- `build` 通过
-- GitHub Release 已发布
-
-测试基线：
-
-- `43/43` 通过
-
-## 8. 常用命令
-
-```bash
-pnpm install
-pnpm db:push
-pnpm db:seed
-pnpm dev
-pnpm test
-pnpm run typecheck
-pnpm build
+双击 停止ARSM.bat 停止服务
 ```
 
-## 9. 如果以后让别的 AI 接手，先看这些
+---
 
-推荐阅读顺序：
+## 如何使用
 
-1. `README.md`
-2. `docs/quick-start-zh.md`
-3. `docs/user-guide-zh.md`
-4. `docs/acquisition-architecture.md`
-5. `docs/acquisition-provider-interface.md`
-6. `docs/acquisition-admin-workflow.md`
-7. `prisma/schema.prisma`
-8. `src/lib/acquisition/runner.ts`
-9. `src/lib/import/service.ts`
+1. 登录 → 管理 → 📥 采集任务
+2. 输入 RJ 编号（如 `RJ01593868`）→ 开始采集
+3. 等待 inspect → download → import 完成
+4. 作品库查看已导入作品
 
-## 10. 后续最值得继续做的方向
+---
 
-按优先级建议：
+## 文档索引
 
-1. 第二个 provider
-2. 字幕 / 转写 / 翻译后处理
-3. 搜索增强
-4. 移动端 / PWA 强化
-5. 桌面壳
+| 文档 | 用途 |
+|------|------|
+| `PROJECT_FEATURE_DOC_ZH.md` | 完整功能清单 + 会议议程 |
+| `ARSM_AUDIT_REPORT_ZH.md` | 全面审查报告（P1/P2/P3） |
+| `ASMRONE_FEATURE_BENCHMARK_ZH.md` | asmr.one 功能对标 |
+| `COMPETITOR_DEEP_DIVE_ZH.md` | 竞品分析 + UI 模式 |
+| `DEEPSEEK_SESSION_LOG_2026-06-20_ZH.md` | 对话记录摘要 |
+| `WORKLOG_ZH.md` | 持续工作日志 |
+| `acquisition-architecture.md` | 采集系统架构 |
+| `acquisition-provider-interface.md` | 如何接第二个 provider |
+| `acquisition-admin-workflow.md` | 管理面板交互流程 |
+| `ARSM_NEXT_UI_PLAYER_METADATA_TASKLIST_ZH.md` | 下一阶段任务单（Codex） |
 
-## 11. 当前已知非阻塞技术债
+---
 
-- Turbopack tracing warning 仍在
-- TypeScript 版本低于 Next.js 推荐值
-- postprocess 仍为占位
-- 当前只有一个真实 provider
+## 已知问题
 
-## 12. 最终归档结论
+见 `ARSM_AUDIT_REPORT_ZH.md`：
+- P1 Bug x 3（死搜索框、除零、虚设 DLsite 选项）
+- P2 英语残留 x 9
+- P3 优化 x 2
 
-当前 ARSM 可以作为一个正式的 `v1.0.0` 项目归档。
+---
 
-它已经不是验证原型，而是一套可用、可维护、可继续扩展的私人媒体库系统基线。
+## 下一阶段
+
+见 `ARSM_NEXT_UI_PLAYER_METADATA_TASKLIST_ZH.md`：
+- Phase A：采集进度可视化
+- Phase B：曲目子文件夹分组
+- Phase C：全局播放器
+- Phase D：元数据自动匹配
+- Phase E：字幕/台本系统

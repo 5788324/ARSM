@@ -1,432 +1,104 @@
-# ARSM Next Phase Roadmap
+# ARSM 下一阶段
 
-## 1. Current State
+日期：2026-06-20 | 当前提交：`bd396ec`
 
-ARSM has reached a usable MVP beta state and is considered complete for its phase-1 goals:
+---
 
-- private web application
-- local login
-- local library import
-- work list and work detail pages
-- browser playback
-- listening progress
-- metadata fetch preview
-- duplicate review and merge
-- basic admin backend
-- Chinese web UI verified in browser
+## 下一阶段目标
 
-This document defines what DeepSeek should build next if development continues.
+把 ARSM 从"能导入、能播放"升级到接近 asmr.one + Kikoeru 的可用产品形态。
 
-The key principle for all future work:
+### 优先级
 
-- preserve ARSM as a **private media library**
-- do not turn it into a public mirror or uncontrolled scraper
-- keep storage abstraction clean so OpenList and local storage can coexist
+| 优先级 | 阶段 | 内容 |
+|--------|------|------|
+| **P1** | A | 采集进度可视化 |
+| **P1** | B | 曲目按子文件夹分组 |
+| **P1** | C1-C3 | 全局播放器基础版 |
+| P2 | D | 元数据自动匹配 |
+| P2 | E1-E4 | 字幕/台本识别与展示 |
+| P3 | C4-C5 | 播放器增强（布局、记忆） |
+| P3 | E5 | 机器翻译（Whisper + LLM） |
 
-## 2. Priority Recommendation
+---
 
-DeepSeek should not add random features. Continue in this order:
+## Phase A：采集进度可视化
 
-1. Real storage integration hardening
-2. Metadata pipeline hardening
-3. Import/review workflow hardening
-4. Playback and UX enhancements
-5. Optional acquisition helpers
+**目标**: 采集页能看到每个文件的下载状态和进度条
 
-## 3. Phase 2 - Storage and Repository Hardening
+**现状**: runner 已有 hooks（onFileStart/Progress/Done/Error），但未写回 DB。progressJson 只存聚合统计。
 
-### Goal
+**要改的文件**:
+- `src/lib/acquisition/runner.ts` — 接入 provider hooks，回写 progressJson
+- `src/app/admin/acquisition/page.tsx` — 渲染进度条 + 文件列表
 
-Make ARSM work reliably with the user's real storage environment, especially OpenList-backed repositories and future cloud-backed libraries.
+**量级**: 1-2 天
 
-### Must-do items
+---
 
-- Validate OpenList repository access against the user's actual OpenList deployment
-- Validate WebDAV repository behavior in real usage
-- Confirm media streaming works for remote repositories end-to-end
-- Confirm cover image loading works for remote repositories
-- Add explicit repository capability matrix in code and docs
+## Phase B：曲目子文件夹分组
 
-### Implementation details
+**目标**: 作品详情页不再平铺曲目，按 `mp3 / wav / SEあり / 特典` 分组显示
 
-- Treat repository support as capability-driven:
-  - list
-  - exists
-  - metadata
-  - stream
-  - cover
-- Add repository health diagnostics:
-  - auth failure
-  - path mapping failure
-  - timeout
-  - file not found
-- Add repository test fixtures or mock adapters for automated tests
-- Add repository-level path normalization rules
+**现状**: Track/TrackFile 无分组字段，import 不保留文件夹层级
 
-### Acceptance criteria
+**要改的文件**:
+- `prisma/schema.prisma` — TrackFile 加 groupPath/groupLabel/sortKey
+- `src/lib/import/service.ts` — 导入时提取分组路径
+- `src/app/works/[id]/page.tsx` — 按组渲染
 
-- ARSM can browse and play media from a real OpenList-backed library
-- Repository failures surface as readable UI errors
-- README clearly states which repository types are production-ready vs experimental
+**量级**: 2-3 天
 
-## 4. Phase 3 - Metadata Pipeline Hardening
+---
 
-### Goal
+## Phase C：全局播放器
 
-Move from generic HTML parsing to more predictable metadata handling.
+**目标**: 底部固定播放器，切页不中断，连续播放，播放队列
 
-### Must-do items
+**现状**: 原生 `<audio controls>` 每个曲目独立
 
-- Replace regex-heavy generic parsing with provider-specific parsing modules where useful
-- Improve field extraction accuracy:
-  - title
-  - original title
-  - work code
-  - circle
-  - release date
-  - tags
-  - CV / voice actors
-  - track list
-- Add field-level confidence or provider support notes
-- Improve metadata apply workflow
+**要改的文件**:
+- `src/components/player/*` (新建) — React Context 全局状态
+- `src/app/works/[id]/page.tsx` — 去原生 audio，改为播放按钮
+- `src/app/layout.tsx` — 挂载底部播放器
 
-### Recommended enhancements
+**量级**: 3-5 天
 
-- Add per-field apply controls in admin UI
-- Add “overwrite empty only” vs “manual overwrite selected fields” option
-- Add metadata diff preview before apply
-- Add metadata source history per work
+---
 
-### Acceptance criteria
+## Phase D：元数据自动匹配
 
-- Admin can fetch metadata, preview changes, and safely apply selected fields
-- Provider support matrix is accurate and visible in docs
-- Metadata failures do not silently corrupt existing work records
+**目标**: 采集导入后自动从 asmr.one 获取元数据并 apply
 
-## 5. Phase 4 - Import and Review Workflow Hardening
+**要改的文件**:
+- `src/lib/acquisition/runner.ts` — import 后触发 metadata fetch
+- `src/lib/metadata/provider.ts` — AsmrOneMetadataProvider
+- `src/lib/metadata/types.ts` — 自动 apply 策略
 
-### Goal
+**量级**: 2-3 天
 
-Make import and duplicate review robust for real long-term library management.
+---
 
-### Must-do items
+## Phase E：字幕/台本
 
-- Promote review handling from “jobs page helper UI” into a dedicated review workflow
-- Add explicit review actions:
-  - merge into existing work
-  - keep as new work
-  - ignore candidate
-  - mark resolved
-- Persist review decision state
-- Improve duplicate matching heuristics with real collection feedback
+**目标**: 识别已有字幕文件，播放器展示同步字幕
 
-### Recommended enhancements
+**要改的文件**:
+- `prisma/schema.prisma` — TrackSubtitle 模型
+- `src/lib/import/service.ts` — 非音频文件识别
+- `src/app/works/[id]/page.tsx` — 字幕/台本展示
+- `src/components/player/*` — `<track>` 支持
 
-- Add review queue filters:
-  - unresolved
-  - merged
-  - ignored
-  - import source
-- Add import dry-run mode
-- Add track reassignment tools
-- Add split-work tool for wrongly grouped imports
+**量级**: 3-5 天
 
-### Acceptance criteria
+---
 
-- Large imports can be reviewed incrementally
-- Duplicate candidates do not disappear after refresh
-- Admin can fully resolve import ambiguities without database edits
+## 风险评估
 
-## 6. Phase 5 - Playback and Listening Experience
-
-### Goal
-
-Turn ARSM from “playable” into “pleasant to use every day”.
-
-### Recommended features
-
-- persistent mini-player
-- queue / playlist
-- next/previous track controls
-- track completion handling
-- stronger resume behavior
-- continue listening shelf improvements
-- waveform display
-- playback speed control
-- keyboard shortcuts on desktop
-- better touch controls on mobile
-
-### Acceptance criteria
-
-- Playback stays stable during page navigation
-- Mobile use feels intentional, not just responsive
-- Daily listening requires fewer clicks
-
-## 7. Phase 6 - Cover and Media Asset Handling
-
-### Goal
-
-Make visual media handling more reliable across local and remote repositories.
-
-### Recommended features
-
-- local cover cache
-- normalized cover import path strategy
-- remote cover proxying
-- missing cover fallback image
-- optional thumbnail generation
-
-### Acceptance criteria
-
-- Works display consistent covers regardless of repository type
-- Missing or broken covers fail gracefully
-
-## 8. Phase 7 - Optional Acquisition Helpers
-
-### Goal
-
-Support operator-triggered acquisition assistance without turning ARSM into a bulk crawler.
-
-### Scope rules
-
-- no uncontrolled site-wide crawling
-- no public mirror behavior
-- no hidden background mass downloads
-
-### Acceptable future capabilities
-
-- manual URL input
-- manual work code input
-- fetch metadata for selected work
-- operator-triggered guided acquisition job
-- import downloaded files into configured repository target
-
-### New requirement: asmr.one targeted acquisition
-
-The user wants future support for acquiring ARSM files from `asmr.one` in a controlled way.
-
-This should be treated as a provider-specific acquisition module, not a generic crawler.
-
-#### Required scope
-
-- accept a single work URL such as `https://www.asmr.one/work/RJ...`
-- resolve work metadata
-- resolve track/media endpoints if accessible
-- obtain any required token or signed media URL if the provider flow allows it
-- download only the explicitly selected work
-- write files into a configured repository target
-- trigger ARSM import after successful download
-
-#### Required constraints
-
-- no whole-site crawling
-- no background mass harvesting
-- no mirror-all behavior
-- keep the logic isolated in a dedicated provider module
-
-#### Recommended implementation order
-
-1. reverse-engineer the provider flow:
-   - work API
-   - tracks API
-   - token acquisition
-   - media stream/download endpoint
-2. build a dry-run inspector that only prints discovered media structure
-3. build actual download support only after the dry-run is reliable
-
-#### Acceptance criteria
-
-- admin can submit one `asmr.one` work URL
-- system can determine whether downloadable media is actually accessible
-- if accessible, the selected work is downloaded into the target repository
-- if inaccessible, the UI shows the exact failing step clearly
-
-### Not recommended
-
-- full-site scrape jobs
-- mass queue from search results without explicit confirmation
-
-## 9. Phase 8 - Subtitle and Translation Pipeline
-
-### Goal
-
-Handle the common case where many ASMR works do not have usable Chinese subtitles.
-
-This should be treated as a separate pipeline from metadata acquisition.
-
-### Real-world subtitle cases to support
-
-- no subtitle file at all
-- subtitle file exists but is Japanese only
-- subtitle exists as `.vtt`
-- subtitle exists as `.srt`
-- subtitle exists as `.txt`
-- subtitle exists as PDF or image-like reading material
-
-### Recommended strategy
-
-Use a multi-stage translation pipeline, not a single naive translation call.
-
-#### Stage 1: Subtitle discovery and ingestion
-
-- detect sidecar subtitle files near audio
-- support `vtt`, `srt`, `txt` first
-- support PDF extraction later
-- store original subtitle text separately from translated text
-
-#### Stage 2: Normalization
-
-- parse subtitle timestamps when available
-- normalize plain text into paragraph or segment blocks
-- extract text from PDF where possible
-- mark extraction confidence and source type
-
-#### Stage 3: Translation
-
-- use an LLM translation pipeline for Japanese-to-Chinese translation
-- preserve timestamps where present
-- preserve speaker or track segmentation where possible
-- cache translation results
-
-#### Stage 4: Review and export
-
-- preview original and translated text side by side
-- allow manual correction
-- export translated `vtt`, `srt`, or `txt`
-
-### Important recommendation
-
-Yes, a large-model translation pipeline is worth doing, but not as the first next feature.
-
-The best order is:
-
-1. subtitle ingestion and storage
-2. subtitle preview UI
-3. translation job queue
-4. translation provider abstraction
-
-### Translation architecture suggestion
-
-- `SubtitleSource`
-- `SubtitleSegment`
-- `TranslationJob`
-- `TranslationProvider`
-
-This keeps the system flexible for later switching between hosted APIs and local models.
-
-### Acceptance criteria
-
-- admin can attach or import subtitle-like text for a work
-- system can run a translation job and save translated results
-- translated subtitles can be viewed alongside the work
-- timestamped subtitles remain timestamped after translation
-
-## 10. Phase 9 - App Form Factors
-
-### Goal
-
-Expand ARSM beyond the browser when the web version is already stable.
-
-### Desktop app feasibility
-
-Yes, feasible, and relatively low-friction later.
-
-#### Recommended approach
-
-- keep ARSM as a web-first app
-- package it as a desktop shell only after the web version is stable
-- preferred desktop path:
-  - Tauri
-  - Electron only if broader desktop integration is needed
-
-#### Why not now
-
-- desktop packaging does not solve the current product gaps
-- it increases build, release, and update complexity
-
-### Android app feasibility
-
-Yes, but it is more work than desktop packaging.
-
-#### Recommended approach
-
-Option 1, preferred first:
-
-- make ARSM a strong mobile web app or PWA
-- support home-screen install
-- optimize playback, resume, and touch UX
-
-Option 2, later:
-
-- build a dedicated Android wrapper or native app
-- likely React Native, Flutter, or a WebView wrapper if requirements stay simple
-
-#### Why not now
-
-- native Android introduces auth, storage, background audio, notification controls, and release complexity
-- the web app should prove the usage model first
-
-### Recommended final sequence
-
-1. stable web app
-2. strong mobile web or PWA
-3. desktop shell
-4. native Android only if the web app is no longer enough
-
-### Acceptance criteria
-
-- desktop: packaged app can log in, browse, and play
-- Android/PWA: mobile install and playback are stable
-- no duplicate business logic should be created outside the main web app
-
-## 11. Phase 10 - Nice-to-Have Features
-
-These are useful, but not urgent:
-
-- favorites collections
-- custom playlists
-- “recently imported” and “recently updated metadata” shelves
-- PWA install polish
-- batch tag tools
-- advanced search operators
-- multilingual title display preferences
-- export/import metadata backups
-
-## 12. Features That Should Wait
-
-Do not prioritize these until the earlier phases are stable:
-
-- public sharing
-- social features
-- comments/reviews
-- multi-tenant accounts
-- uncontrolled download automation
-
-## 13. Recommended Tracking Structure
-
-DeepSeek should continue work as separate issue-sized branches or milestones:
-
-1. `phase2-storage-hardening`
-2. `phase3-metadata-hardening`
-3. `phase4-review-workflow`
-4. `phase5-player-ux`
-5. `phase6-cover-assets`
-6. `phase7-acquisition-helpers`
-7. `phase8-subtitle-translation`
-8. `phase9-app-form-factors`
-
-Each milestone should end with:
-
-- updated README
-- screenshots for affected UI
-- short handoff summary
-- explicit known limitations
-
-## 14. Final Guidance for DeepSeek
-
-DeepSeek should treat the project as:
-
-- phase-1 complete
-- phase-2 onward focused on reliability and quality
-
-The next best investment is **real OpenList integration validation**, because that connects directly to the user's actual long-term usage model.
+| 阶段 | 风险 |
+|------|------|
+| A | 低 — 纯前端渲染 + runner 小改动 |
+| B | 中 — 需改 schema + 影响已有导入逻辑 |
+| C | 中 — React Context 全局状态 + 多页面协调 |
+| D | 中 — 需要可靠 metadata provider |
+| E | 高 — 字幕模型 + 文件识别 + 前端 `<track>` |

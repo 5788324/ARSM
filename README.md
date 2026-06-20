@@ -1,116 +1,43 @@
-﻿# ARSM
+﻿# ARSM — 私人音频图书馆
 
-ARSM 是一个给个人使用的私人 ASMR / 音频媒体库系统。
+从 asmr.one 自动采集同人音声，本地私有化存储，Web 端管理播放。
 
-当前 `v1.0.0` 已完成的核心能力：
+---
 
-- 本地音声目录导入
-- 作品 / 曲目浏览与网页播放
-- 收听进度与收藏
-- 元数据补录
-- 重复作品审查与合并
-- `asmr.one` 采集任务化下载与自动导入
-- acquisition provider 架构、任务视图、流程测试与文档
+## 核心能力
 
-## 1.0 状态
+- 🔽 **自动采集** — 输入 RJ 编号，一键下载 + 导入
+- 📂 **本地导入** — 扫描文件夹，自动识别音频作品
+- 🎵 **Web 播放** — 浏览器直接播放，PWA 支持
+- 🔍 **重复检测** — CJK 滑窗匹配，避免重复导入
+- 📋 **元数据管理** — 从 asmr.one 获取社团/声优/标签
 
-当前版本可以视为：
+## 当前限制
 
-> 面向私人使用的第一版可用系统。
+- 播放器较简陋（全局播放器开发中）
+- 字幕/台本系统尚未实现
+- 仅支持 asmr.one 单一采集来源
 
-它不是最终成品，但已经具备稳定使用和继续扩展的代码基线。
+## 快速启动
 
-## 主要功能
-
-### 前台
-
-- 作品列表 `/works`
-- 作品详情 `/works/[id]`
-- 播放与继续收听
-- 收藏 `/favorites`
-
-### 后台
-
-- 仓库管理 `/admin/repositories`
-- 手动导入 `/admin/import`
-- 采集任务 `/admin/acquisition`
-- 元数据补录 `/admin/metadata`
-- 任务状态 `/admin/jobs`
-- 重复作品处理 `/admin/duplicates`
-
-### 采集能力
-
-- 输入 RJ 编号或 URL
-- 自动识别 provider
-- inspect 文件树
-- 下载到本地目录
-- 自动导入进 ARSM
-- 任务列表与详情查看
-- 下载 / 导入错误详情查看
-
-## 快速开始
-
-### 环境要求
-
-- Node.js 20+
-- pnpm
-- ffmpeg / ffprobe
-
-### 本地启动
-
-```bash
-pnpm install
-copy .env.example .env
-pnpm db:push
-pnpm db:seed
-pnpm dev
+```
+双击 启动ARSM.bat
+→ http://localhost:3000
+→ 用户名: admin  密码: admin
 ```
 
-启动后访问：
+## 技术栈
 
-- [http://localhost:3000](http://localhost:3000)
+Next.js 16 · TypeScript · Prisma 5 · SQLite · NextAuth v5 · Tailwind CSS 4
 
-### Docker 启动
+## 文档
 
-```bash
-copy .env.example .env
-docker compose up -d
-```
-
-## 常用命令
-
-| 命令 | 用途 |
-|---|---|
-| `pnpm dev` | 启动开发环境 |
-| `pnpm build` | 生产构建 |
-| `pnpm test` | 运行测试 |
-| `pnpm run typecheck` | TypeScript 检查 |
-| `pnpm db:push` | 同步 Prisma schema |
-| `pnpm db:seed` | 初始化管理员账号 |
-
-## 文档入口
-
-- [一页版快速上手](./docs/quick-start-zh.md)
-- [详细使用说明](./docs/user-guide-zh.md)
-- [1.0 发布说明](./docs/release-v1.0.0.md)
-- [Acquisition 架构](./docs/acquisition-architecture.md)
-- [Provider 接口说明](./docs/acquisition-provider-interface.md)
-- [后台采集工作流](./docs/acquisition-admin-workflow.md)
-
-## 测试与质量
-
-截至 `v1.0.0`：
-
-- 测试：`43/43` 通过
-- 已完成 acquisition 流程测试
-- 已补齐 acquisition 架构文档
-
-## 后续方向
-
-推荐后续优先级：
-
-1. 第二个 provider
-2. 字幕 / 转写 / 翻译后处理
-3. 搜索增强
-4. 安卓 / PWA / 桌面端体验加强
-
+| 文档 | 说明 |
+|------|------|
+| [用户指南](docs/user-guide-zh.md) | 启动、采集、导入、常见问题 |
+| [项目功能文档](docs/PROJECT_FEATURE_DOC_ZH.md) | 完整功能清单 + 会议议程 |
+| [审查报告](docs/ARSM_AUDIT_REPORT_ZH.md) | Bug 清单（P1/P2/P3） |
+| [功能对标](docs/ASMRONE_FEATURE_BENCHMARK_ZH.md) | vs asmr.one 对比 |
+| [竞品分析](docs/COMPETITOR_DEEP_DIVE_ZH.md) | Kikoeru 系列参考 |
+| [交接文档](docs/PROJECT_HANDOFF_ZH.md) | 给接手者的完整说明 |
+| [工作日志](docs/WORKLOG_ZH.md) | 持续维护日志 |
