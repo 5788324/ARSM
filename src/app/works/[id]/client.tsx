@@ -64,14 +64,14 @@ export default function WorkClient({ work }: { work: any }) {
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{work.displayTitle as string}</h1>
-          {work.circle && <p className="mt-1 text-sm text-zinc-500">{work.circle.name}</p>}
+          {work.circle && <Link href={`/circles/${work.circle.id}`} className="mt-1 text-sm text-blue-600 hover:underline dark:text-blue-400">{work.circle.name}</Link>}
           {work.workVAs && work.workVAs.length > 0 && (
-            <p className="mt-1 text-sm text-zinc-500">声优：{work.workVAs.map((v: any) => v.voiceActor.name).join(', ')}</p>
+            <p className="mt-1 text-sm text-zinc-500">声优：{work.workVAs.map((v: any) => <Link key={v.voiceActor.id} href={`/voice-actors/${v.voiceActor.id}`} className="text-blue-600 hover:underline dark:text-blue-400 mr-1">{v.voiceActor.name}</Link>)}</p>
           )}
           {work.workTags && work.workTags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
               {work.workTags.map((wt: any) => (
-                <span key={wt.id} className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">{wt.tag.name}</span>
+                <Link key={wt.id} href={`/tags/${wt.tag.id}`} className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700">{wt.tag.name}</Link>
               ))}
             </div>
           )}
