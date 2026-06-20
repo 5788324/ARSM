@@ -235,3 +235,23 @@ model MetadataJob {
 
   @@map("metadata_jobs")
 }
+
+// ─── Acquisition ────────────────────────────────────────
+
+model AcquisitionJob {
+  id                 String   @id @default(cuid())
+  providerId         String
+  input              String
+  normalizedSourceId String
+  targetDir          String
+  status             String   @default("pending")
+  currentStep        String?
+  progressJson       String?
+  resultJson         String?
+  errorJson          String?
+  createdAt          DateTime @default(now())
+  startedAt          DateTime?
+  finishedAt         DateTime?
+
+  @@map("acquisition_jobs")
+}
