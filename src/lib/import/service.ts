@@ -1,9 +1,9 @@
-/**
- * Shared import service — usable by both /api/import route
+﻿/**
+ * Shared import service 鈥?usable by both /api/import route
  * and the acquisition runner.
  *
  * Takes a repository adapter + scan path, runs the full import
- * pipeline (scan → duplicate detection → create works/tracks).
+ * pipeline (scan 鈫?duplicate detection 鈫?create works/tracks).
  */
 
 import { prisma } from '@/lib/prisma';
@@ -49,7 +49,7 @@ export async function scanDirectory(rootPath: string, groupByTop = false): Promi
     if (entry.isDirectory) continue;
 
     // In grouped mode, use top-level segment as folder key
-    // e.g. "RJ01584624/01本編/mp3/01.mp3" → folderKey = "RJ01584624"
+    // e.g. "RJ01584624/01鏈法/mp3/01.mp3" 鈫?folderKey = "RJ01584624"
     const firstSlash = entry.relativePath.indexOf('/');
     const folderPath = groupByTop && firstSlash > 0
       ? entry.relativePath.substring(0, firstSlash)
@@ -83,7 +83,7 @@ export async function scanDirectory(rootPath: string, groupByTop = false): Promi
     if (group.tracks.length === 0) continue;
     group.tracks.sort((a, b) => a.trackNumber - b.trackNumber);
     workGroups.push({
-      folderName: folderPath === '__root__' ? 'Imported Works' : folderPath.split('/').pop()!,
+      folderName: folderPath === '__root__' ? '导入作品' : folderPath.split('/').pop()!,
       folderPath,
       tracks: group.tracks,
       coverPath: group.coverPath,
@@ -147,7 +147,7 @@ function charOverlapRatio(a: string, b: string): number {
 }
 
 /**
- * Run the full import pipeline: scan → duplicate detect → create works/tracks.
+ * Run the full import pipeline: scan 鈫?duplicate detect 鈫?create works/tracks.
  * This is the same logic used by POST /api/import.
  */
 export async function runImport(input: ImportInput): Promise<ImportResult> {
@@ -160,7 +160,7 @@ export async function runImport(input: ImportInput): Promise<ImportResult> {
   if (!repo) {
     // Auto-create default repository
     repo = await prisma.storageRepository.create({
-      data: { name: 'Local Library', type: 'local', rootPath, isEnabled: true },
+      data: { name: '本地媒体库', type: 'local', rootPath, isEnabled: true },
     });
   }
 
@@ -228,11 +228,11 @@ export async function runImport(input: ImportInput): Promise<ImportResult> {
           });
           foundTracks++;
         } catch (e) {
-          errors.push(`曲目 "${tc.filename}": ${e instanceof Error ? e.message : String(e)}`);
+          errors.push(`鏇茬洰 "${tc.filename}": ${e instanceof Error ? e.message : String(e)}`);
         }
       }
     } catch (e) {
-      errors.push(`作品 "${group.folderName}": ${e instanceof Error ? e.message : String(e)}`);
+      errors.push(`浣滃搧 "${group.folderName}": ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -244,3 +244,5 @@ export async function runImport(input: ImportInput): Promise<ImportResult> {
     reviewCandidates: reviewCandidates!.length > 0 ? reviewCandidates : undefined,
   };
 }
+
+

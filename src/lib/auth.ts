@@ -1,4 +1,4 @@
-import NextAuth from 'next-auth';
+﻿import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
@@ -6,10 +6,10 @@ import { prisma } from '@/lib/prisma';
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
-      name: 'credentials',
+      name: '账号密码',
       credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+        username: { label: '用户名', type: 'text' },
+        password: { label: '密码', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null;
@@ -52,3 +52,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: '/login',
   },
 });
+
