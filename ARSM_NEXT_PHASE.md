@@ -1,6 +1,6 @@
-﻿# ARSM 下一阶段
+# ARSM 下一阶段
 
-日期：2026-06-20 | 当前状态：Phase 4 已完成
+日期：2026-06-20 | 当前状态：v1.0 已收口，进入 Phase 5 规划
 
 ---
 
@@ -32,3 +32,8 @@
 - 国际化（i18n）
 - 移动端 PWA 优化
 - 评论系统
+
+## 执行方式
+
+- Phase 5 执行任务单：`D:/openlist/ARSM_PHASE5_ONEPASS_DELIVERY_BRIEF_ZH.md`
+- 推荐方式：DeepSeek 一次性大包开发，Codex 最终集中审查
