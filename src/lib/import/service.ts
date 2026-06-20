@@ -146,16 +146,15 @@ function charOverlapRatio(a: string, b: string): number {
 export async function runImport(input: ImportInput): Promise<ImportResult> {
   const { rootPath } = input;
 
-  const repo = input.repositoryId
+  let repo = input.repositoryId
     ? await prisma.storageRepository.findUnique({ where: { id: input.repositoryId } })
     : await prisma.storageRepository.findFirst({ where: { type: 'local', isEnabled: true } });
 
   if (!repo) {
     // Auto-create default repository
-    const created = await prisma.storageRepository.create({
+    repo = await prisma.storageRepository.create({
       data: { name: 'Local Library', type: 'local', rootPath, isEnabled: true },
     });
-    // Continue with created repo
   }
 
   const { workGroups, totalFiles, skippedFiles } = await scanDirectory(rootPath);

@@ -96,6 +96,15 @@ async function runAcquisitionJob(
       },
     });
 
+    // If autoImport is false, stop after inspect (file tree only)
+    if (!opts.autoImport) {
+      await prisma.acquisitionJob.update({
+        where: { id: jobId },
+        data: { status: 'done', currentStep: null, finishedAt: new Date() },
+      });
+      return;
+    }
+
     // Step 3: Download
     await prisma.acquisitionJob.update({
       where: { id: jobId },
@@ -159,6 +168,10 @@ async function runAcquisitionJob(
       postprocess: opts.postprocess ? { status: 'stub' } : undefined,
     };
 
+    const errorPayload: Record<string, unknown> = {};
+    if (downloadResult.errors.length > 0) errorPayload.download = downloadResult.errors;
+    if (importResult.errors.length > 0) errorPayload.import = importResult.errors;
+
     await prisma.acquisitionJob.update({
       where: { id: jobId },
       data: {
@@ -166,7 +179,7 @@ async function runAcquisitionJob(
         currentStep: null,
         progressJson: JSON.stringify(progress),
         resultJson: JSON.stringify({ download: { done: downloadResult.done, failed: downloadResult.failed }, import: { foundWorks: importResult.foundWorks, foundTracks: importResult.foundTracks } }),
-        errorJson: importResult.errors.length > 0 ? JSON.stringify({ import: importResult.errors, download: downloadResult.errors }) : null,
+        errorJson: Object.keys(errorPayload).length > 0 ? JSON.stringify(errorPayload) : null,
         finishedAt: new Date(),
       },
     });
