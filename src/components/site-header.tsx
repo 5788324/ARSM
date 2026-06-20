@@ -10,7 +10,7 @@ export function SiteHeader({ signedIn, userName }: { signedIn: boolean; userName
 
   if (!signedIn || pathname === '/login') return null;
 
-  const linkClass = (href: string) => pathname === href ? 'font-medium text-black' : 'text-gray-600 hover:text-black';
+  const linkClass = (href: string) => pathname === href ? 'font-medium text-black dark:text-white' : 'text-gray-600 hover:text-black dark:text-zinc-400 dark:hover:text-zinc-200';
 
   return (
     <header className="border-b border-gray-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">

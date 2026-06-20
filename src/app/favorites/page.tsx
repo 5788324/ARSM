@@ -74,7 +74,7 @@ export default async function FavoritesPage() {
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-xs text-zinc-400">{fav.work._count.tracks} tracks</p>
+                <p className="mt-1 text-xs text-zinc-400">{fav.work._count.tracks} 首曲目</p>
               </div>
             </Link>
           ))}

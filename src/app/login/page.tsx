@@ -35,8 +35,11 @@ export default async function LoginPage({
                 password: formData.get('password') as string,
                 redirectTo: '/',
               });
-            } catch {
-              redirect('/login?error=CredentialsSignin');
+            } catch (e) {
+              if ((e as any)?.type?.startsWith?.('CredentialsSignin')) {
+                redirect('/login?error=CredentialsSignin');
+              }
+              throw e;
             }
           }}
           className="space-y-4"
