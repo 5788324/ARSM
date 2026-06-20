@@ -5,8 +5,9 @@ import { prisma } from '@/lib/prisma';
 export async function PUT(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: '未登录' }, { status: 401 });
-  // Admin-only: metadata editing
-  if (session.user?.name !== 'admin') return NextResponse.json({ error: '仅管理员可编辑元数据' }, { status: 403 });
+  // Admin-only metadata editing
+  const isAdmin = (session.user as any)?.isAdmin === true;
+  if (!isAdmin) return NextResponse.json({ error: '仅管理员可编辑元数据' }, { status: 403 });
 
   const url = new URL(req.url);
   const workId = url.searchParams.get('workId');
@@ -25,7 +26,7 @@ export async function PUT(req: NextRequest) {
     await prisma.work.update({ where: { id: workId }, data: updateData });
   }
 
-  // User rating — per-user using UserRating table
+  // User rating — per-user via UserRating table (any user)
   if (body.userRating !== undefined && session.user?.id) {
     if (body.userRating > 0) {
       await prisma.userRating.upsert({
@@ -38,7 +39,7 @@ export async function PUT(req: NextRequest) {
     }
   }
 
-  // Re-fetch metadata if requested
+  // Re-fetch metadata if requested (admin only, already checked above)
   if (body.refetch && work.workCode) {
     try {
       const codeMatch = work.workCode.match(/^(RJ|VJ|BJ)(\d+)$/);
