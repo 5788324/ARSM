@@ -79,7 +79,7 @@ export default function RepositoriesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this repository? This cannot be undone.')) return;
+    if (!confirm('确定删除此仓库？此操作不可撤销。')) return;
 
     try {
       const res = await fetch('/api/repositories', {
@@ -230,7 +230,7 @@ export default function RepositoriesPage() {
                             : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
                       }`}
                     >
-                      {repo.type}
+                      {repo.type === 'local' ? '本地' : repo.type === 'openlist' ? 'OpenList' : 'WebDAV'}
                     </span>
                     {repo.healthy !== undefined && (
                       <span

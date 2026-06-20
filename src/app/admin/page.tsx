@@ -40,6 +40,13 @@ export default async function AdminPage() {
           <p className="mt-1 text-sm text-zinc-500">审查并合并重复作品。</p>
         </a>
         <a
+          href="/admin/acquisition"
+          className="rounded-xl border border-zinc-200 p-6 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+        >
+          <h2 className="font-semibold">采集任务</h2>
+          <p className="mt-1 text-sm text-zinc-500">从 asmr.one 等来源采集作品。</p>
+        </a>
+        <a
           href="/admin/jobs"
           className="rounded-xl border border-zinc-200 p-6 hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
         >
