@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 export function HomeClient({ data }: { data: any }) {
-  const { recentWorks, recentImports, totalWorks, totalTracks } = data;
+  const { recentWorks, recentImports, listeningHistory, totalWorks, totalTracks } = data;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -49,6 +49,27 @@ export function HomeClient({ data }: { data: any }) {
                   <span className="flex-1 truncate">{j.normalizedSourceId || j.input}</span>
                   <span className="text-xs text-zinc-500">{j.status}</span>
                 </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Continue listening */}
+        {listeningHistory?.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">最近播放</h2>
+              <Link href="/works" className="text-sm text-blue-600 hover:underline dark:text-blue-400">全部作品 →</Link>
+            </div>
+            <div className="space-y-2">
+              {listeningHistory.map((h: any) => (
+                <Link key={h.id} href={`/works/${h.workId}`} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 hover:shadow dark:border-zinc-800">
+                  <span className="text-zinc-400">♪</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm truncate">{h.workId?.slice(-8)}</p>
+                    <p className="text-xs text-zinc-500">{h.positionSec > 0 ? `⏱ ${Math.floor(h.positionSec/60)}:${String(h.positionSec%60).padStart(2,'0')}` : '已完成'}</p>
+                  </div>
+                </Link>
               ))}
             </div>
           </section>

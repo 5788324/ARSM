@@ -6,7 +6,7 @@ export function MetadataEditor({ work, onSaved }: { work: any; onSaved: () => vo
   const [title, setTitle] = useState(work.displayTitle || '');
   const [origTitle, setOrigTitle] = useState(work.originalTitle || '');
   const [release, setRelease] = useState(work.releaseDate || '');
-  const [rating, setRating] = useState(work.userRating || 0);
+  const [rating, setRating] = useState(work.ratings?.[0]?.rating || 0);
   const [saving, setSaving] = useState(false);
 
   const save = async (refetch = false) => {

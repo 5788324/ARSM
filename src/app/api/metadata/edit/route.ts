@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 export async function PUT(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: '未登录' }, { status: 401 });
+  // Admin-only: metadata editing
+  if (session.user?.name !== 'admin') return NextResponse.json({ error: '仅管理员可编辑元数据' }, { status: 403 });
 
   const url = new URL(req.url);
   const workId = url.searchParams.get('workId');
@@ -18,10 +20,22 @@ export async function PUT(req: NextRequest) {
   if (body.displayTitle !== undefined) updateData.displayTitle = body.displayTitle;
   if (body.originalTitle !== undefined) updateData.originalTitle = body.originalTitle;
   if (body.releaseDate !== undefined) updateData.releaseDate = body.releaseDate;
-  if (body.userRating !== undefined) updateData.userRating = body.userRating;
 
   if (Object.keys(updateData).length > 0) {
     await prisma.work.update({ where: { id: workId }, data: updateData });
+  }
+
+  // User rating — per-user using UserRating table
+  if (body.userRating !== undefined && session.user?.id) {
+    if (body.userRating > 0) {
+      await prisma.userRating.upsert({
+        where: { userId_workId: { userId: session.user.id, workId } },
+        update: { rating: body.userRating },
+        create: { userId: session.user.id, workId, rating: body.userRating },
+      });
+    } else {
+      await prisma.userRating.deleteMany({ where: { userId: session.user.id, workId } });
+    }
   }
 
   // Re-fetch metadata if requested
