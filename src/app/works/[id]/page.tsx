@@ -28,7 +28,13 @@ export default async function WorkDetailPage({ params }: { params: Promise<{ id:
     },
   });
 
+  // Query subtitles separately
+  const subtitles = await (prisma as any).trackSubtitle.findMany({
+    where: { workId: id },
+    orderBy: { createdAt: 'asc' },
+  });
+
   if (!work) notFound();
 
-  return <WorkClient work={JSON.parse(JSON.stringify(work))} />;
+  return <WorkClient work={JSON.parse(JSON.stringify({ ...work, trackSubtitles: subtitles }))} />;
 }

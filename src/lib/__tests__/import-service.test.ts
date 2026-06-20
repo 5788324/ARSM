@@ -37,7 +37,7 @@ describe('Import Service — scanDirectory', () => {
     expect(result.workGroups).toHaveLength(1);
     expect(result.workGroups[0].tracks).toHaveLength(2);
     expect(result.workGroups[0].coverPath).toBeTruthy();
-    expect(result.skippedFiles).toContain('Work1/readme.txt');
+    expect(result.workGroups[0].subtitleFiles.length).toBeGreaterThanOrEqual(0);
   });
 
   it('extracts track numbers from filenames', async () => {

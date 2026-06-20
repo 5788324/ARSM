@@ -53,6 +53,7 @@ model Work {
   listeningHistory ListeningHistory[]
   importJobs   ImportJob[]
   metadataJobs MetadataJob[]
+  trackSubtitles TrackSubtitle[]
 
   @@map("works")
 }
@@ -264,6 +265,7 @@ model AcquisitionJob {
 model TrackSubtitle {
   id           String   @id @default(cuid())
   trackId      String
+  workId       String?
   repositoryId String
   filePath     String
   kind         String   // vtt, srt, lrc, txt, pdf, transcript
@@ -272,6 +274,8 @@ model TrackSubtitle {
   isDefault    Boolean  @default(false)
   content      String?  // parsed text for search
   createdAt    DateTime @default(now())
+
+  work Work? @relation(fields: [workId], references: [id], onDelete: Cascade)
 
   @@map("track_subtitles")
 }

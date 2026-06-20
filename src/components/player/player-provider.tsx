@@ -43,10 +43,11 @@ export function usePlayer() {
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [state, setState] = useState<PlayerState>({
-    queue: [], currentIndex: -1, playing: false,
-    currentTime: 0, duration: 0, volume: 1, rate: 1,
-  });
+  const stateRef = useRef<PlayerState>({ queue: [], currentIndex: -1, playing: false, currentTime: 0, duration: 0, volume: 1, rate: 1 });
+  const [state, setState] = useState<PlayerState>(stateRef.current);
+
+  // Sync ref
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   // Init audio element
   useEffect(() => {
@@ -57,7 +58,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current;
     const onTime = () => setState((s) => ({ ...s, currentTime: a.currentTime }));
     const onDur = () => setState((s) => ({ ...s, duration: a.duration }));
-    const onEnd = () => { setState((s) => ({ ...s, playing: false })); };
+    const onEnd = () => {
+      const s = stateRef.current;
+      const nextIdx = s.currentIndex + 1;
+      if (nextIdx < s.queue.length) {
+        setTimeout(() => playTrack(nextIdx), 200);
+      } else {
+        setState((prev) => ({ ...prev, playing: false }));
+      }
+    };
     const onErr = () => { setState((s) => ({ ...s, playing: false })); };
     a.addEventListener('timeupdate', onTime);
     a.addEventListener('loadedmetadata', onDur);

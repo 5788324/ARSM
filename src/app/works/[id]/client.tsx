@@ -132,6 +132,23 @@ export default function WorkClient({ work }: { work: any }) {
             </div>
           </div>
         )}
+
+        {/* Subtitle / Text files */}
+        {work.trackSubtitles && work.trackSubtitles.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold">字幕 / 台本</h2>
+            <div className="mt-2 divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+              {work.trackSubtitles.map((sub: any) => (
+                <div key={sub.id} className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-mono dark:bg-zinc-800">{sub.kind?.toUpperCase()}</span>
+                  <span className="flex-1 text-sm truncate">{sub.filePath?.split('/').pop()}</span>
+                  {sub.label && <span className="text-xs text-zinc-500">{sub.label}</span>}
+                  {sub.language && <span className="text-xs text-zinc-400">{sub.language}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
