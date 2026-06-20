@@ -24,40 +24,59 @@ interface PlayerContextValue extends PlayerState {
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 export function usePlayer() { const ctx = useContext(PlayerContext); if (!ctx) throw new Error('usePlayer: missing PlayerProvider'); return ctx; }
 
+const initialState: PlayerState = { queue: [], currentIndex: -1, playing: false, currentTime: 0, duration: 0, volume: 1, rate: 1, loopMode: 'all', showQueue: false };
+
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const stateRef = useRef<PlayerState>({ queue: [], currentIndex: -1, playing: false, currentTime: 0, duration: 0, volume: 1, rate: 1, loopMode: 'all', showQueue: false });
+  const stateRef = useRef<PlayerState>({ ...initialState });
   const playTrackRef = useRef<(index: number) => void>(() => {});
-  const [state, setState] = useState<PlayerState>(() => {
-    const saved = { volume: 1, rate: 1, loopMode: 'all' as const };
-    try { saved.volume = parseFloat(localStorage.getItem('arsm-volume') || '1'); } catch {}
-    try { saved.rate = parseFloat(localStorage.getItem('arsm-rate') || '1'); } catch {}
-    try { saved.loopMode = (localStorage.getItem('arsm-loop') as any) || 'all'; } catch {}
-    return { ...stateRef.current, volume: saved.volume, rate: saved.rate, loopMode: saved.loopMode };
-  });
+  const [state, setState] = useState<PlayerState>({ ...initialState });
+  const [init, setInit] = useState(false);
+
+  // Load persisted prefs on mount (client-only, safe)
+  useEffect(() => {
+    try {
+      const v = parseFloat(localStorage.getItem('arsm-volume') || '1');
+      const r = parseFloat(localStorage.getItem('arsm-rate') || '1');
+      const lm = (localStorage.getItem('arsm-loop') as PlayerState['loopMode']) || 'all';
+      setState((s) => ({ ...s, volume: isNaN(v) ? 1 : v, rate: isNaN(r) ? 1 : r, loopMode: lm }));
+      stateRef.current.volume = isNaN(v) ? 1 : v;
+      stateRef.current.rate = isNaN(r) ? 1 : r;
+      stateRef.current.loopMode = lm;
+    } catch {}
+    setInit(true);
+  }, []);
 
   useEffect(() => { stateRef.current = state; }, [state]);
-  useEffect(() => { if (!audioRef.current) { audioRef.current = new Audio(); audioRef.current.preload = 'auto'; }
+
+  useEffect(() => {
+    if (!init) return;
+    if (!audioRef.current) { audioRef.current = new Audio(); audioRef.current.preload = 'auto'; }
     const a = audioRef.current;
     const onTime = () => setState((s) => ({ ...s, currentTime: a.currentTime }));
     const onDur = () => setState((s) => ({ ...s, duration: a.duration }));
     const onEnd = () => {
       const s = stateRef.current;
-      if (s.loopMode === 'one') { a.currentTime = 0; a.play().catch(() => {}); return; }
+      if (s.loopMode === 'one') { a.currentTime = 0; a.play().catch(() => {}); setState((p) => ({ ...p, currentTime: 0 })); return; }
       const nextIdx = s.currentIndex + 1;
       if (nextIdx < s.queue.length) { setTimeout(() => playTrackRef.current(nextIdx), 200); }
       else if (s.loopMode === 'all') { setTimeout(() => playTrackRef.current(0), 200); }
       else { setState((p) => ({ ...p, playing: false })); }
     };
     const onErr = () => { setState((s) => ({ ...s, playing: false })); };
-    a.addEventListener('timeupdate', onTime); a.addEventListener('loadedmetadata', onDur); a.addEventListener('ended', onEnd); a.addEventListener('error', onErr);
-    return () => { a.removeEventListener('timeupdate', onTime); a.removeEventListener('loadedmetadata', onDur); a.removeEventListener('ended', onEnd); a.removeEventListener('error', onErr); };
-  }, []);
+    a.addEventListener('timeupdate', onTime); a.addEventListener('loadedmetadata', onDur);
+    a.addEventListener('ended', onEnd); a.addEventListener('error', onErr);
+    return () => {
+      a.removeEventListener('timeupdate', onTime); a.removeEventListener('loadedmetadata', onDur);
+      a.removeEventListener('ended', onEnd); a.removeEventListener('error', onErr);
+    };
+  }, [init]);
 
   const playTrack = useCallback((index: number) => {
     const q = stateRef.current.queue; const t = q[index];
     if (!t || !audioRef.current) return;
-    audioRef.current.src = t.streamUrl; audioRef.current.playbackRate = stateRef.current.rate; audioRef.current.volume = stateRef.current.volume;
+    audioRef.current.src = t.streamUrl; audioRef.current.playbackRate = stateRef.current.rate;
+    audioRef.current.volume = stateRef.current.volume;
     audioRef.current.play().catch(() => {});
     setState((s) => ({ ...s, currentIndex: index, playing: true }));
   }, []);
@@ -65,14 +84,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const play = useCallback((track: TrackItem, queue?: TrackItem[]) => {
     const newQueue = queue || [track]; const idx = newQueue.findIndex((t) => t.id === track.id);
-    setState((s) => ({ ...s, queue: newQueue })); setTimeout(() => playTrack(idx >= 0 ? idx : 0), 0);
+    // Immediately update ref so playTrack reads correct queue
+    stateRef.current.queue = newQueue;
+    setState((s) => ({ ...s, queue: newQueue }));
+    const targetIdx = idx >= 0 ? idx : 0;
+    // Small delay to let React flush state, then play
+    setTimeout(() => playTrack(targetIdx), 10);
   }, [playTrack]);
 
-  const addToQueue = useCallback((track: TrackItem) => { setState((s) => ({ ...s, queue: [...s.queue, track] })); }, []);
-  const removeFromQueue = useCallback((index: number) => {
-    setState((s) => { const q = [...s.queue]; q.splice(index, 1); const ci = index <= s.currentIndex ? Math.max(0, s.currentIndex - 1) : s.currentIndex; return { ...s, queue: q, currentIndex: q.length === 0 ? -1 : ci }; });
+  const addToQueue = useCallback((track: TrackItem) => {
+    setState((s) => { const q = [...s.queue, track]; stateRef.current.queue = q; return { ...s, queue: q }; });
   }, []);
-  const clearQueue = useCallback(() => { setState((s) => ({ ...s, queue: [], currentIndex: -1, playing: false })); }, []);
+  const removeFromQueue = useCallback((index: number) => {
+    setState((s) => {
+      const q = [...s.queue]; q.splice(index, 1);
+      const ci = index < s.currentIndex ? s.currentIndex - 1 : index === s.currentIndex ? -1 : s.currentIndex;
+      stateRef.current.queue = q;
+      return { ...s, queue: q, currentIndex: q.length === 0 ? -1 : ci };
+    });
+  }, []);
+  const clearQueue = useCallback(() => {
+    stateRef.current.queue = [];
+    setState((s) => ({ ...s, queue: [], currentIndex: -1, playing: false }));
+  }, []);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
@@ -82,9 +116,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const next = useCallback(() => { const ni = state.currentIndex + 1; if (ni < state.queue.length) playTrack(ni); }, [state.currentIndex, state.queue.length, playTrack]);
   const prev = useCallback(() => { const pi = state.currentIndex - 1; if (pi >= 0) playTrack(pi); }, [state.currentIndex, playTrack]);
   const seek = useCallback((t: number) => { if (audioRef.current) audioRef.current.currentTime = t; setState((s) => ({ ...s, currentTime: t })); }, []);
-  const setVolume = useCallback((v: number) => { if (audioRef.current) audioRef.current.volume = v; setState((s) => ({ ...s, volume: v })); localStorage.setItem('arsm-volume', String(v)); }, []);
-  const setRate = useCallback((r: number) => { if (audioRef.current) audioRef.current.playbackRate = r; setState((s) => ({ ...s, rate: r })); localStorage.setItem('arsm-rate', String(r)); }, []);
-  const setLoopMode = useCallback((m: 'off' | 'one' | 'all') => { setState((s) => ({ ...s, loopMode: m })); localStorage.setItem('arsm-loop', m); }, []);
+  const setVolume = useCallback((v: number) => { if (audioRef.current) audioRef.current.volume = v; setState((s) => ({ ...s, volume: v })); try { localStorage.setItem('arsm-volume', String(v)); } catch {} }, []);
+  const setRate = useCallback((r: number) => { if (audioRef.current) audioRef.current.playbackRate = r; setState((s) => ({ ...s, rate: r })); try { localStorage.setItem('arsm-rate', String(r)); } catch {} }, []);
+  const setLoopMode = useCallback((m: 'off' | 'one' | 'all') => { setState((s) => ({ ...s, loopMode: m })); try { localStorage.setItem('arsm-loop', m); } catch {} }, []);
   const toggleQueue = useCallback(() => { setState((s) => ({ ...s, showQueue: !s.showQueue })); }, []);
 
   const fmt = (t: number) => { const m = Math.floor(t / 60); return m + ':' + String(Math.floor(t % 60)).padStart(2, '0'); };
@@ -94,7 +128,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   return (
     <PlayerContext.Provider value={{ ...state, play, addToQueue, removeFromQueue, clearQueue, togglePlay, next, prev, seek, setVolume, setRate, setLoopMode, toggleQueue }}>
       {children}
-      {currentTrack && (
+      {init && currentTrack && (
         <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 pb-safe">
           <div className="mx-auto max-w-5xl px-4 py-2">
             <div className="flex items-center gap-3">

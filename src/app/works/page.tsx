@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 interface WorkCard { id: string; displayTitle: string; workCode: string | null; coverPath: string | null; circle: { name: string } | null; _count: { tracks: number }; }
 
-export default function WorksPage() {
-  const router = useRouter();
+function WorksContent() {
   const sp = useSearchParams();
   const [keyword, setKeyword] = useState(sp.get('keyword') || '');
   const [sort, setSort] = useState(sp.get('sort') || 'recent');
@@ -35,8 +34,6 @@ export default function WorksPage() {
 
   useEffect(() => { fetchWorks(); }, [fetchWorks]);
 
-  const handleSearch = (e: React.FormEvent) => { e.preventDefault(); setPage(1); fetchWorks(); };
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex items-center justify-between mb-4">
@@ -44,7 +41,7 @@ export default function WorksPage() {
         <span className="text-sm text-zinc-500">{total} 个作品</span>
       </div>
 
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 mb-6">
+      <form onSubmit={(e) => { e.preventDefault(); setPage(1); setTimeout(fetchWorks, 0); }} className="flex flex-wrap gap-2 mb-6">
         <input type="search" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="搜索作品/编号/社团/声优/标签..." className="flex-1 min-w-[200px] rounded-lg border border-zinc-300 px-4 py-2 text-sm focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800" />
         <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800">
           <option value="recent">最新导入</option>
@@ -87,5 +84,13 @@ export default function WorksPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function WorksPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-8"><p className="text-zinc-500">加载中...</p></div>}>
+      <WorksContent />
+    </Suspense>
   );
 }
