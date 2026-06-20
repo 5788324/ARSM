@@ -120,7 +120,7 @@ async function runAcquisitionJob(jobId: string, opts: { providerId: string; inpu
     const hasDownloads = downloadResult.failed > 0, hasImports = importErrors.length > 0;
     const finalStatus = reviewCount > 0 ? 'review' : hasDownloads || hasImports ? 'done_with_errors' : 'done';
     const ep: Record<string, unknown> = {};
-    if (downloadResult.errors.length > 0) ep.download = downloadResult.errors;
+    if ((downloadResult.errors?.length ?? 0) > 0) ep.download = downloadResult.errors;
     if (importErrors.length > 0) ep.import = importErrors;
 
     await flushProgress(jobId, inspect, true);

@@ -36,7 +36,6 @@ export default function AcquisitionPage() {
   const [autoImport, setAutoImport] = useState(true);
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState('');
-  const [detailJob, setDetailJob] = useState<JobItem | null>(null);
   const [expandedJobs, setExpandedJobs] = useState<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {

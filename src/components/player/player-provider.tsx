@@ -97,7 +97,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
   const removeFromQueue = useCallback((index: number) => {
     setState((s) => {
-      const q = [...s.queue]; const removed = q[index];
+      const q = [...s.queue];
       q.splice(index, 1);
       let ci = s.currentIndex;
       if (index < s.currentIndex) ci = s.currentIndex - 1;
