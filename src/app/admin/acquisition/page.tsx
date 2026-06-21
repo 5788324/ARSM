@@ -112,7 +112,10 @@ export default function AcquisitionPage() {
                 <div className="p-4 cursor-pointer" onClick={() => toggleExpand(job.id)}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-mono dark:bg-zinc-800">{job.providerId}</span>
+                      <span className={`rounded px-1.5 py-0.5 text-xs font-mono ${
+                        job.providerId === 'asmrone' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                        job.providerId === 'dlsite' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                        'bg-zinc-100 dark:bg-zinc-800'}`}>{job.providerId}</span>
                       <span className="text-sm font-medium truncate">{job.normalizedSourceId || job.input}</span>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         job.status === 'done' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
