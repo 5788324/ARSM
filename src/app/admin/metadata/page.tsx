@@ -97,7 +97,7 @@ export default function MetadataPage() {
             {queryType === 'url'
               ? 'URL'
               : queryType === 'code'
-                ? 'Work Code'
+                ? '作品编号'
                 : '搜索标题'}
           </label>
           <input
@@ -134,7 +134,7 @@ export default function MetadataPage() {
       {/* Result Preview */}
       {result?.metadata && (
         <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="font-semibold">Preview</h2>
+          <h2 className="font-semibold">预览</h2>
 
           {result.metadata.coverUrl && (
             <img
@@ -146,7 +146,7 @@ export default function MetadataPage() {
 
           <div className="mt-3 space-y-1 text-sm">
             <p>
-              <span className="text-zinc-500">Title:</span>{' '}
+              <span className="text-zinc-500">标题：</span>{' '}
               {result.metadata.displayTitle}
             </p>
             {result.metadata.originalTitle && (

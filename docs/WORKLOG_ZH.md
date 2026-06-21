@@ -1,4 +1,4 @@
-﻿# ARSM 工作日志
+# ARSM 工作日志
 
 > 持续维护日志。2026-06-17 起。
 
@@ -74,10 +74,22 @@
 - 预留 `DLsiteProvider` stub，不注册、不影响现有 asmr.one 流程
 
 ### Phase 7 审查修复链
-- `19c5058`：把“已听完次数 / 总收听时长 / history.length+ 条”这类误导性统计换成真实口径
-- 统计页当前显示：播放记录、收听作品、续听中
+- `19c5058`：把误导性统计换成真实口径
 
-### 当前版本状态
-- 采集闭环：inspect → download → import → metadata
-- 使用闭环：搜索 → 浏览 → 播放 → 字幕跟播/阅读 → 最近播放 → 个人评分 → 继续收听
-- 阶段状态：Phase 7 已完成，进入 Phase 8 规划
+### Phase 8：来源与统计深化
+- `a3bd62c`：DLsite Provider、PlayLog 模型、smoke 测试
+- `0a695cb`：DLsite RJ-only、inspect-only、PlayLog 接线、DLsite 测试
+- `049f0d1`：播放次数与总收听时长统计口径调整
+- `fca7ac1`：播放器 30 秒定时 / 暂停 / 清空等路径进度上报
+- `f54f53e`：`deltaSec` 增量上报，修复累计翻倍
+- `de310c7`：所有切歌入口统一 report + reset
+- `2970b58`：单曲循环 onEnd report + reset
+- `a69058c`：代码追踪方式复核 4 条统计路径，并补 `seek` 同步 `lastReportedSec`
+- `2284e69`：修复 Prisma schema 中 `PlayLog` 缺失的反向关系，恢复项目可启动状态
+
+### Phase 8 当前结论
+- 代码实现：已完成
+- 构建：通过
+- 测试：63/63 通过
+- 真实浏览器/人工交互验收：待完成
+- 待验收路径见：`docs/PHASE8_VALIDATION_CHECKLIST_ZH.md`

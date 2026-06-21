@@ -35,7 +35,7 @@ export default function ImportPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Import failed');
+        setError(data.error || '导入失败');
       } else {
         setResult(data);
         // Refresh the page data after import
@@ -123,7 +123,7 @@ export default function ImportPage() {
                   <li key={i}>{e}</li>
                 ))}
                 {result.errors.length > 10 && (
-                  <li>...and {result.errors.length - 10} more</li>
+                  <li>...还有 {result.errors.length - 10} 个</li>
                 )}
               </ul>
             </div>

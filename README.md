@@ -1,6 +1,6 @@
-﻿# ARSM — 私人音频图书馆
+# ARSM — 私人音频图书馆
 
-从 asmr.one 自动采集同人音声，本地私有化存储，Web 端管理播放。当前已完成 Phase 7。
+从 asmr.one 自动采集同人音声，本地私有化存储，Web 端管理播放。当前状态：**Phase 8 代码完成，待真实交互验收**。
 
 ---
 
@@ -17,13 +17,14 @@
 - ✏ **元数据编辑** — 管理员可手动编辑标题、发售日并重抓 asmr.one
 - ⭐ **个人评分** — 按用户存储的作品评分
 - 👥 **多用户结构** — 保留多用户数据模型，普通用户与管理员界面已分离
+- 📊 **收听统计** — 基于 PlayLog 的播放次数 / 收听作品 / 总收听时长
 - 🌙 **深色模式** — 一键切换明暗主题
 - 🐳 **部署支持** — 启动批处理 + Docker 基础支持
 
 ## 当前限制
 
-- 仅支持 asmr.one 单一真实来源，DLsite 仅为 stub
-- 收听统计仍需继续深化
+- DLsite 目前仅支持 RJ-only inspect / 元数据级能力，不支持真实下载
+- Phase 8 还缺 4 条真实交互验收
 - 字幕暂不支持翻译、双语显示、AI 生成
 - 仍未提供 Android / 桌面正式打包壳
 
@@ -47,7 +48,8 @@ Next.js 16 · TypeScript · Prisma 5 · SQLite · NextAuth v5 · Tailwind CSS 4
 | [项目功能文档](docs/PROJECT_FEATURE_DOC_ZH.md) | 当前功能总览 |
 | [项目交接文档](docs/PROJECT_HANDOFF_ZH.md) | 当前状态与接手说明 |
 | [工作日志](docs/WORKLOG_ZH.md) | 持续维护日志 |
-| [下一阶段](ARSM_NEXT_PHASE.md) | Phase 8 路线 |
+| [下一阶段](ARSM_NEXT_PHASE.md) | 下一阶段路线 |
 | [工作清单](WORKLIST.md) | 已完成 / 待开发事项 |
 | [项目计划](PROJECT_PLAN.md) | 分阶段路线图 |
 | [Phase 8 任务单](docs/PHASE8_ONEPASS_TASKLIST_ZH.md) | 给 DeepSeek 的一次性交付任务单 |
+| [Phase 8 验收清单](docs/PHASE8_VALIDATION_CHECKLIST_ZH.md) | 真实交互验收清单 |

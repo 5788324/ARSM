@@ -8,14 +8,13 @@ export default async function ContinueListeningPage() {
   if (!session) redirect('/login');
   const uid = session.user?.id || '';
 
-  const [history, totalRecords, playCount, distinctWorks, totalSec, topWorksAgg] = await Promise.all([
+  const [history, playCount, distinctWorks, totalSec, topWorksAgg] = await Promise.all([
     prisma.listeningHistory.findMany({
       where: { userId: uid },
       orderBy: { listenedAt: 'desc' },
       take: 30,
       include: { work: { include: { circle: true, _count: { select: { tracks: true } }, tracks: { orderBy: { trackNumber: 'asc' }, take: 1 } } } },
     }),
-    prisma.listeningHistory.count({ where: { userId: uid } }),
     (prisma as any).playLog.count({ where: { userId: uid } }) as Promise<number>,
     prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid } }).then(r => r.length),
     (prisma as any).playLog.aggregate({ where: { userId: uid }, _sum: { listenedSec: true } }).then((r: any) => r._sum?.listenedSec || 0) as Promise<number>,
