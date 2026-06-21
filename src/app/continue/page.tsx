@@ -8,7 +8,7 @@ export default async function ContinueListeningPage() {
   if (!session) redirect('/login');
   const uid = session.user?.id || '';
 
-  const [history, playCount, distinctWorks, totalSec, topWorksAgg] = await Promise.all([
+  const [history, playCount, distinctWorks, totalSec] = await Promise.all([
     prisma.listeningHistory.findMany({
       where: { userId: uid },
       orderBy: { listenedAt: 'desc' },
@@ -18,7 +18,6 @@ export default async function ContinueListeningPage() {
     (prisma as any).playLog.count({ where: { userId: uid } }) as Promise<number>,
     prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid } }).then(r => r.length),
     (prisma as any).playLog.aggregate({ where: { userId: uid }, _sum: { listenedSec: true } }).then((r: any) => r._sum?.listenedSec || 0) as Promise<number>,
-    (prisma as any).playLog.groupBy({ by: ['workId'], where: { userId: uid }, _count: true, orderBy: { _count: { workId: 'desc' } }, take: 5 }) as Promise<any[]>,
   ]);
 
   const formatPosition = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;

@@ -94,6 +94,7 @@ export default function RepositoriesPage() {
       }
 
       fetchRepos();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : '未知错误');
     }

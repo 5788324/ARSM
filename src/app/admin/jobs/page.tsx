@@ -59,12 +59,12 @@ export default function JobsPage() {
 
   const handleMerge = async (targetId: string, sourceIds: string[]) => {
     if (!confirm(`将 ${sourceIds.length} 个候选合并到目标？不可撤销。`)) return;
-    await fetch('/api/admin/merge', {
+    const res = await fetch('/api/admin/merge', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ targetId, sourceIds }),
     });
-    fetchData();
+    if (res.ok) fetchData();
   };
 
   if (loading) return (

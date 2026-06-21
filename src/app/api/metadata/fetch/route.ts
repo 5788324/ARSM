@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         break;
       case 'title':
         return NextResponse.json(
-          { error: 'Title search is not yet supported. Use URL or work code instead.' },
+          { error: 'Title search 暂不支持，请使用 URL 或编号。' },
           { status: 400 },
         );
       default:
