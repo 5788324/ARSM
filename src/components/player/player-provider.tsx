@@ -30,6 +30,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stateRef = useRef<PlayerState>({ ...initialState });
   const playTrackRef = useRef<(index: number) => void>(() => {});
+  const lastReportedSec = useRef(0);
+  const reportTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reportRef = useRef<() => void>(() => {});
   const [state, setState] = useState<PlayerState>({ ...initialState });
   const [init, setInit] = useState(false);
 
@@ -84,6 +87,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => { playTrackRef.current = playTrack; }, [playTrack]);
 
+  // Report listening progress to server
+  const reportProgress = useCallback(() => {
+    const s = stateRef.current;
+    const t = s.queue[s.currentIndex];
+    if (!t) return;
+    const sec = Math.floor(audioRef.current?.currentTime || 0);
+    const delta = sec - lastReportedSec.current;
+    if (delta <= 0) return;
+    lastReportedSec.current = sec;
+    fetch('/api/history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workId: t.workId, trackId: t.id, positionSec: sec }) }).catch(() => {});
+  }, []);
+  useEffect(() => { reportRef.current = reportProgress; }, [reportProgress]);
+
+  // Periodic report every 30s while playing
+  useEffect(() => {
+    if (state.playing && init) {
+      reportTimerRef.current = setInterval(() => reportRef.current(), 30000);
+      return () => { if (reportTimerRef.current) clearInterval(reportTimerRef.current); };
+    } else {
+      if (reportTimerRef.current) { clearInterval(reportTimerRef.current); reportTimerRef.current = null; }
+    }
+  }, [state.playing, init]);
+
   const play = useCallback((track: TrackItem, queue?: TrackItem[]) => {
     const newQueue = queue || [track]; const idx = newQueue.findIndex((t) => t.id === track.id);
     // Immediately update ref so playTrack reads correct queue
@@ -107,6 +133,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       stateRef.current.queue = q;
       // Stop audio if we removed the currently playing track
       if (index === s.currentIndex && audioRef.current) {
+        reportRef.current();
         audioRef.current.pause();
         audioRef.current.src = '';
       }
@@ -114,6 +141,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   }, []);
   const clearQueue = useCallback(() => {
+    reportRef.current();
     stateRef.current.queue = [];
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
     setState((s) => ({ ...s, queue: [], currentIndex: -1, playing: false }));
@@ -121,11 +149,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
-    if (state.playing) { audioRef.current.pause(); setState((s) => ({ ...s, playing: false })); }
+    if (state.playing) { reportRef.current(); audioRef.current.pause(); setState((s) => ({ ...s, playing: false })); }
     else { audioRef.current.play().catch(() => {}); setState((s) => ({ ...s, playing: true })); }
   }, [state.playing]);
-  const next = useCallback(() => { const ni = state.currentIndex + 1; if (ni < state.queue.length) playTrack(ni); }, [state.currentIndex, state.queue.length, playTrack]);
-  const prev = useCallback(() => { const pi = state.currentIndex - 1; if (pi >= 0) playTrack(pi); }, [state.currentIndex, playTrack]);
+  const next = useCallback(() => { reportRef.current(); lastReportedSec.current = 0; const ni = state.currentIndex + 1; if (ni < state.queue.length) playTrack(ni); }, [state.currentIndex, state.queue.length, playTrack]);
+  const prev = useCallback(() => { reportRef.current(); lastReportedSec.current = 0; const pi = state.currentIndex - 1; if (pi >= 0) playTrack(pi); }, [state.currentIndex, playTrack]);
   const seek = useCallback((t: number) => { if (audioRef.current) audioRef.current.currentTime = t; setState((s) => ({ ...s, currentTime: t })); }, []);
   const setVolume = useCallback((v: number) => { if (audioRef.current) audioRef.current.volume = v; setState((s) => ({ ...s, volume: v })); try { localStorage.setItem('arsm-volume', String(v)); } catch {} }, []);
   const setRate = useCallback((r: number) => { if (audioRef.current) audioRef.current.playbackRate = r; setState((s) => ({ ...s, rate: r })); try { localStorage.setItem('arsm-rate', String(r)); } catch {} }, []);
