@@ -8,7 +8,7 @@ export default async function ContinueListeningPage() {
   if (!session) redirect('/login');
   const uid = session.user?.id || '';
 
-  const [history, playCount, distinctWorks, totalSec, topWorksAgg] = await Promise.all([
+  const [history, playCount, distinctWorks, totalSec, topWorksAgg, sourceStats, topTracksAgg] = await Promise.all([
     prisma.listeningHistory.findMany({
       where: { userId: uid },
       orderBy: { listenedAt: 'desc' },
@@ -22,6 +22,15 @@ export default async function ContinueListeningPage() {
       'SELECT workId, COUNT(*) as cnt FROM play_logs WHERE userId = ? GROUP BY workId ORDER BY cnt DESC LIMIT 5',
       uid,
     ) as Promise<Array<{ workId: string; cnt: number }>>,
+    // Source stats
+    (prisma as any).$queryRawUnsafe(
+      'SELECT COALESCE(ws.sourceName, w.sourceSite, "本地导入") as src, COUNT(*) as cnt FROM Work w LEFT JOIN WorkSource ws ON ws.workId = w.id GROUP BY src ORDER BY cnt DESC',
+    ) as Promise<Array<{ src: string; cnt: number }>>,
+    // Most-played tracks
+    (prisma as any).$queryRawUnsafe(
+      'SELECT trackId, COUNT(*) as cnt FROM play_logs WHERE userId = ? AND trackId IS NOT NULL GROUP BY trackId ORDER BY cnt DESC LIMIT 5',
+      uid,
+    ) as Promise<Array<{ trackId: string; cnt: number }>>,
   ]);
 
   const formatPosition = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
@@ -62,7 +71,7 @@ export default async function ContinueListeningPage() {
 
       {topWorksAgg?.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-lg font-semibold">最常播放</h2>
+          <h2 className="text-lg font-semibold">最常播放作品</h2>
           <div className="mt-2 space-y-2">
             {topWorksAgg.map((agg: any) => {
               const title = topWorkMap.get(agg.workId) || agg.workId?.slice(-8);

@@ -81,9 +81,11 @@ function WorksContent() {
           <option value="title">标题排序</option>
           <option value="tracks">曲目数</option>
           <option value="duration">时长</option>
+          <option value="recent_play">最近播放</option>
         </select>
         <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={hasSubtitle} onChange={(e) => { setHasSubtitle(e.target.checked); setPage(1); }} /> 带字幕</label>
         <button type="submit" className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900">搜索</button>
+        <button type="button" onClick={() => { setKeyword(''); setExclude(''); setSort('recent'); setHasSubtitle(false); setMinDur(''); setMaxDur(''); setCircleFilter(''); setVaFilter(''); setTagFilter(''); setPage(1); }} className="rounded-lg border border-zinc-300 px-3 py-2 text-xs hover:bg-red-50 dark:border-zinc-700 dark:hover:bg-red-950">清空</button>
         <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="rounded-lg border border-zinc-300 px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">{showAdvanced ? '收起' : '高级'}</button>
       </form>
 
