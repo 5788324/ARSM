@@ -188,6 +188,19 @@ model ListeningHistory {
   @@map("listening_history")
 }
 
+model PlayLog {
+  id        String   @id @default(cuid())
+  userId    String
+  workId    String
+  listenedSec Int    @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@map("play_logs")
+}
+
 model Favorite {
   id        String   @id @default(cuid())
   userId    String

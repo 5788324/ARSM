@@ -17,6 +17,8 @@ export interface InspectResult {
   totalSize: number;
   /** Per-file download info */
   files: InspectFile[];
+  /** Provider-specific metadata (circle, tags, etc.) */
+  metadata?: Record<string, unknown>;
 }
 
 export interface InspectFile {

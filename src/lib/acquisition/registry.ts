@@ -1,5 +1,6 @@
 import { AcquisitionProvider } from './types';
 import { AsmrOneProvider } from './providers/asmrone';
+import { DLsiteProvider } from './providers/dlsite';
 
 /** Global provider registry */
 const providers = new Map<string, AcquisitionProvider>();
@@ -34,3 +35,4 @@ export function findProvider(input: string): AcquisitionProvider | undefined {
 // ─── Bootstrap: register built-in providers ─────────────
 
 registerProvider(new AsmrOneProvider());
+registerProvider(new DLsiteProvider());
