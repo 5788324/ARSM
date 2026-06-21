@@ -20,6 +20,7 @@ model User {
   listeningHistory ListeningHistory[]
   favorites        Favorite[]
   ratings          UserRating[]
+  playLogs         PlayLog[]
   importJobs        ImportJob[]
   metadataJobs      MetadataJob[]
 
@@ -50,8 +51,9 @@ model Work {
   workTags     WorkTag[]
   workVAs      WorkVoiceActor[]
   workSources  WorkSource[]
-  favorites    Favorite[]
-  ratings      UserRating[]
+  favorites        Favorite[]
+  ratings          UserRating[]
+  playLogs         PlayLog[]
   listeningHistory ListeningHistory[]
   importJobs   ImportJob[]
   metadataJobs MetadataJob[]
@@ -309,3 +311,4 @@ model TrackSubtitle {
 
   @@map("track_subtitles")
 }
+
