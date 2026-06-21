@@ -76,6 +76,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [init]);
 
   const playTrack = useCallback((index: number) => {
+    // Report previous track's progress before switching
+    reportRef.current();
+    lastReportedSec.current = 0;
     const q = stateRef.current.queue; const t = q[index];
     if (!t || !audioRef.current) return;
     audioRef.current.src = t.streamUrl; audioRef.current.playbackRate = stateRef.current.rate;
@@ -152,8 +155,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (state.playing) { reportRef.current(); audioRef.current.pause(); setState((s) => ({ ...s, playing: false })); }
     else { audioRef.current.play().catch(() => {}); setState((s) => ({ ...s, playing: true })); }
   }, [state.playing]);
-  const next = useCallback(() => { reportRef.current(); lastReportedSec.current = 0; const ni = state.currentIndex + 1; if (ni < state.queue.length) playTrack(ni); }, [state.currentIndex, state.queue.length, playTrack]);
-  const prev = useCallback(() => { reportRef.current(); lastReportedSec.current = 0; const pi = state.currentIndex - 1; if (pi >= 0) playTrack(pi); }, [state.currentIndex, playTrack]);
+  const next = useCallback(() => { const ni = state.currentIndex + 1; if (ni < state.queue.length) playTrack(ni); }, [state.currentIndex, state.queue.length, playTrack]);
+  const prev = useCallback(() => { const pi = state.currentIndex - 1; if (pi >= 0) playTrack(pi); }, [state.currentIndex, playTrack]);
   const seek = useCallback((t: number) => { if (audioRef.current) audioRef.current.currentTime = t; setState((s) => ({ ...s, currentTime: t })); }, []);
   const setVolume = useCallback((v: number) => { if (audioRef.current) audioRef.current.volume = v; setState((s) => ({ ...s, volume: v })); try { localStorage.setItem('arsm-volume', String(v)); } catch {} }, []);
   const setRate = useCallback((r: number) => { if (audioRef.current) audioRef.current.playbackRate = r; setState((s) => ({ ...s, rate: r })); try { localStorage.setItem('arsm-rate', String(r)); } catch {} }, []);
