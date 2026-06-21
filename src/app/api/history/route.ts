@@ -34,9 +34,11 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Also log to PlayLog for cumulative tracking (any position value)
+  // Also log to PlayLog for cumulative tracking
+  // Use deltaSec (incremental) when available, fall back to positionSec
+  const listenSec = body.deltaSec !== undefined ? body.deltaSec : body.positionSec || 0;
   await (prisma as any).playLog.create({
-    data: { userId: session.user!.id!, workId, listenedSec: positionSec || 0 },
+    data: { userId: session.user!.id!, workId, listenedSec: listenSec },
   }).catch(() => {});
 
   return NextResponse.json({ ok: true });

@@ -96,7 +96,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const delta = sec - lastReportedSec.current;
     if (delta <= 0) return;
     lastReportedSec.current = sec;
-    fetch('/api/history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workId: t.workId, trackId: t.id, positionSec: sec }) }).catch(() => {});
+    fetch('/api/history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workId: t.workId, trackId: t.id, positionSec: sec, deltaSec: delta }) }).catch(() => {});
   }, []);
   useEffect(() => { reportRef.current = reportProgress; }, [reportProgress]);
 
