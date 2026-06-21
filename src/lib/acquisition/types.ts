@@ -62,6 +62,8 @@ export interface AcquisitionProvider {
   readonly id: string;
   /** Human-readable display name */
   readonly displayName: string;
+  /** Whether this provider supports file download (default true) */
+  readonly canDownload?: boolean;
   /** Check if this provider can handle the given input */
   supports(input: string): boolean;
   /** Inspect a work — return file tree without downloading */

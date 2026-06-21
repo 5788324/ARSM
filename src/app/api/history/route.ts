@@ -34,6 +34,13 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Also log to PlayLog for cumulative time tracking
+  if (positionSec > 0) {
+    await (prisma as any).playLog.create({
+      data: { userId: session.user!.id!, workId, listenedSec: positionSec },
+    }).catch(() => {});
+  }
+
   return NextResponse.json({ ok: true });
 }
 

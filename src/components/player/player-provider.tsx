@@ -79,6 +79,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audioRef.current.volume = stateRef.current.volume;
     audioRef.current.play().catch(() => {});
     setState((s) => ({ ...s, currentIndex: index, playing: true }));
+    // Log play event via fetch (fire-and-forget)
+    fetch('/api/history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workId: t.workId, trackId: t.id, positionSec: 0 }) }).catch(() => {});
   }, []);
   useEffect(() => { playTrackRef.current = playTrack; }, [playTrack]);
 

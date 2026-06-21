@@ -9,11 +9,12 @@ import { AcquisitionProvider, InspectResult, DownloadSummary, ProgressHooks } fr
 export class DLsiteProvider implements AcquisitionProvider {
   readonly id = 'dlsite';
   readonly displayName = 'DLsite (元数据)';
+  readonly canDownload = false;
 
   supports(input: string): boolean {
     try {
       const trimmed = input.trim().toUpperCase();
-      return /^(RJ|BJ|VJ)\d{6,}$/.test(trimmed);
+      return /^RJ\d{6,}$/.test(trimmed); // DLsite only supports RJ works
     } catch { return false; }
   }
 

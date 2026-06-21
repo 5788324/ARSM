@@ -8,7 +8,7 @@ export default async function ContinueListeningPage() {
   if (!session) redirect('/login');
   const uid = session.user?.id || '';
 
-  const [history, totalRecords, distinctWorks, inProgress] = await Promise.all([
+  const [history, totalRecords, distinctWorks, inProgress, totalSec, topWorksAgg] = await Promise.all([
     prisma.listeningHistory.findMany({
       where: { userId: uid },
       orderBy: { listenedAt: 'desc' },
@@ -18,9 +18,13 @@ export default async function ContinueListeningPage() {
     prisma.listeningHistory.count({ where: { userId: uid } }),
     prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid } }).then(r => r.length),
     prisma.listeningHistory.count({ where: { userId: uid, positionSec: { gt: 0 } } }),
+    (prisma as any).playLog.aggregate({ where: { userId: uid }, _sum: { listenedSec: true } }).then((r: any) => r._sum?.listenedSec || 0) as Promise<number>,
+    (prisma as any).playLog.groupBy({ by: ['workId'], where: { userId: uid }, _count: true, orderBy: { _count: { workId: 'desc' } }, take: 5 }) as Promise<any[]>,
   ]);
 
   const formatPosition = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  const totalPlaySec = Number(totalSec) || 0;
+  const fmtDur = (sec: number) => sec >= 3600 ? `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m` : `${Math.floor(sec / 60)}m`;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -39,8 +43,8 @@ export default async function ContinueListeningPage() {
           <p className="text-2xl font-bold">{distinctWorks}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <p className="text-xs text-zinc-500">续听中</p>
-          <p className="text-2xl font-bold">{inProgress}</p>
+          <p className="text-xs text-zinc-500">总收听时长</p>
+          <p className="text-2xl font-bold">{fmtDur(totalPlaySec)}</p>
         </div>
       </div>
 

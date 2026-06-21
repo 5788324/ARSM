@@ -27,6 +27,8 @@ async function runAcquisitionJob(jobId: string, opts: { providerId: string; inpu
   try {
     const provider = getProvider(opts.providerId);
     if (!provider) { await failJob(jobId, `未知 provider: ${opts.providerId}`); return; }
+    // Respect provider capability: if canDownload is false, force inspect-only
+    const effectiveAutoImport = opts.autoImport && provider.canDownload !== false;
 
     // Inspect
     await updateJob(jobId, { status: 'inspecting', currentStep: 'inspect', startedAt: new Date() });
@@ -34,7 +36,7 @@ async function runAcquisitionJob(jobId: string, opts: { providerId: string; inpu
     pendingProgress[jobId] = { done: 0, failed: 0, bytes: 0, files: {} };
     await flushProgress(jobId, inspect);
 
-    if (!opts.autoImport) { await updateJob(jobId, { status: 'done', finishedAt: new Date() }); return; }
+    if (!effectiveAutoImport) { await updateJob(jobId, { status: 'done', finishedAt: new Date() }); return; }
 
     // Download
     await updateJob(jobId, { status: 'downloading', currentStep: 'download' });
