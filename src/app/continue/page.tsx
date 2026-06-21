@@ -65,7 +65,7 @@ export default async function ContinueListeningPage() {
               const title = topWorkMap.get(agg.workId) || agg.workId?.slice(-8);
               return (
                 <div key={agg.workId} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
-                  <span className="text-xs font-bold text-zinc-500 w-6 text-center">{agg._count}</span>
+                  <span className="text-xs font-bold text-zinc-500 w-6 text-center">{agg._count?.workId || agg._count?._all || 0}</span>
                   <span className="flex-1 text-sm truncate">{title}</span>
                 </div>
               );

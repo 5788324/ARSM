@@ -92,6 +92,9 @@ function WorksContent() {
           <input type="text" value={exclude} onChange={(e) => setExclude(e.target.value)} placeholder="排除词（如: 中出）" className="w-40 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
           <input type="number" value={minDur} onChange={(e) => setMinDur(e.target.value)} placeholder="最低时长(分)" className="w-32 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
           <input type="number" value={maxDur} onChange={(e) => setMaxDur(e.target.value)} placeholder="最高时长(分)" className="w-32 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
+          <input type="text" value={circleFilter} onChange={(e) => setCircleFilter(e.target.value)} placeholder="社团" className="w-24 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
+          <input type="text" value={vaFilter} onChange={(e) => setVaFilter(e.target.value)} placeholder="声优" className="w-24 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
+          <input type="text" value={tagFilter} onChange={(e) => setTagFilter(e.target.value)} placeholder="标签" className="w-24 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
         </div>
       )}
 
