@@ -10,6 +10,7 @@ export async function GET() {
   const providers = listProviders().map((p) => ({
     id: p.id,
     displayName: p.displayName,
+    canDownload: p.canDownload !== false, // default true
   }));
 
   return NextResponse.json({ ok: true, data: providers });

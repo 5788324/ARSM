@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 
-interface Provider { id: string; displayName: string; }
+interface Provider { id: string; displayName: string; canDownload: boolean; }
 
 interface ProgressData {
   inspect?: { fileCount: number; totalSize: number; title?: string };
@@ -86,7 +86,7 @@ export default function AcquisitionPage() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div><label className="block text-sm font-medium">来源</label>
             <select value={providerId} onChange={(e) => setProviderId(e.target.value)} className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800">
-              {providers.map((p) => <option key={p.id} value={p.id}>{p.displayName}</option>)}</select></div>
+              {providers.map((p) => <option key={p.id} value={p.id}>{p.displayName}{p.canDownload ? '' : ' (仅元数据)'}</option>)}</select></div>
           <div><label className="block text-sm font-medium">RJ 编号</label>
             <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="RJ01538000" className="mt-1 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800" /></div>
           <div><label className="block text-sm font-medium">下载目录</label>
@@ -155,6 +155,19 @@ export default function AcquisitionPage() {
                     ))}
                   </div>
                 )}
+
+                {isExpanded && job.status === 'done' && job.resultJson && (() => { try {
+                  const r = JSON.parse(job.resultJson);
+                  if (r.inspect && !download?.files) {
+                    return (<div className="border-t border-zinc-100 dark:border-zinc-800 px-4 py-3 text-xs text-zinc-600 dark:text-zinc-400">
+                      <h4 className="text-xs font-medium text-zinc-500 mb-2">元数据预览</h4>
+                      {r.inspect.title && <p>标题：{r.inspect.title}</p>}
+                      {r.inspect.circle && <p>社团：{r.inspect.circle}</p>}
+                      {r.inspect.source && <p>来源：{r.inspect.source}</p>}
+                      {r.inspect.sourceUrl && <a href={r.inspect.sourceUrl} target="_blank" className="text-blue-600 hover:underline block mt-1">{r.inspect.sourceUrl}</a>}
+                    </div>);
+                  }
+                } catch {}; return null; })()}
               </div>
             );
           })}

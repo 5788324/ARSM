@@ -36,7 +36,15 @@ async function runAcquisitionJob(jobId: string, opts: { providerId: string; inpu
     pendingProgress[jobId] = { done: 0, failed: 0, bytes: 0, files: {} };
     await flushProgress(jobId, inspect);
 
-    if (!effectiveAutoImport) { await updateJob(jobId, { status: 'done', finishedAt: new Date() }); return; }
+    if (!effectiveAutoImport) {
+      // Save inspect metadata for inspect-only providers
+      const inspectMeta = inspect.metadata || {};
+      await updateJob(jobId, {
+        status: 'done', finishedAt: new Date(),
+        resultJson: JSON.stringify({ inspect: { title: inspect.title, release: inspect.release, ...inspectMeta } }),
+      });
+      return;
+    }
 
     // Download
     await updateJob(jobId, { status: 'downloading', currentStep: 'download' });

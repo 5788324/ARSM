@@ -8,7 +8,7 @@ export default async function ContinueListeningPage() {
   if (!session) redirect('/login');
   const uid = session.user?.id || '';
 
-  const [history, playCount, distinctWorks, totalSec] = await Promise.all([
+  const [history, playCount, distinctWorks, totalSec, topWorksAgg] = await Promise.all([
     prisma.listeningHistory.findMany({
       where: { userId: uid },
       orderBy: { listenedAt: 'desc' },
@@ -18,6 +18,7 @@ export default async function ContinueListeningPage() {
     (prisma as any).playLog.count({ where: { userId: uid } }) as Promise<number>,
     prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid } }).then(r => r.length),
     (prisma as any).playLog.aggregate({ where: { userId: uid }, _sum: { listenedSec: true } }).then((r: any) => r._sum?.listenedSec || 0) as Promise<number>,
+    (prisma as any).playLog.groupBy({ by: ['workId'], where: { userId: uid }, _count: true, orderBy: { _count: { workId: 'desc' } }, take: 5 }) as Promise<any[]>,
   ]);
 
   const formatPosition = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
@@ -45,6 +46,23 @@ export default async function ContinueListeningPage() {
           <p className="text-2xl font-bold">{fmtDur(totalPlaySec)}</p>
         </div>
       </div>
+
+      {topWorksAgg?.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold">最常播放</h2>
+          <div className="mt-2 space-y-2">
+            {topWorksAgg.map((agg: any) => {
+              const work = history.find((h) => h.workId === agg.workId)?.work;
+              return (
+                <div key={agg.workId} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
+                  <span className="text-xs font-bold text-zinc-500 w-6 text-center">{agg._count}</span>
+                  <span className="flex-1 text-sm truncate">{work?.displayTitle || agg.workId?.slice(-8)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <h2 className="mt-8 text-lg font-semibold">最近播放</h2>
       {history.length === 0 ? (
