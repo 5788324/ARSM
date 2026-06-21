@@ -60,7 +60,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const onDur = () => setState((s) => ({ ...s, duration: a.duration }));
     const onEnd = () => {
       const s = stateRef.current;
-      if (s.loopMode === 'one') { a.currentTime = 0; a.play().catch(() => {}); setState((p) => ({ ...p, currentTime: 0 })); return; }
+      if (s.loopMode === 'one') {
+        reportRef.current();
+        lastReportedSec.current = 0;
+        a.currentTime = 0; a.play().catch(() => {}); setState((p) => ({ ...p, currentTime: 0 })); return;
+      }
       const nextIdx = s.currentIndex + 1;
       if (nextIdx < s.queue.length) { setTimeout(() => playTrackRef.current(nextIdx), 200); }
       else if (s.loopMode === 'all') { setTimeout(() => playTrackRef.current(0), 200); }
