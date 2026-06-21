@@ -161,7 +161,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [state.playing]);
   const next = useCallback(() => { const ni = state.currentIndex + 1; if (ni < state.queue.length) playTrack(ni); }, [state.currentIndex, state.queue.length, playTrack]);
   const prev = useCallback(() => { const pi = state.currentIndex - 1; if (pi >= 0) playTrack(pi); }, [state.currentIndex, playTrack]);
-  const seek = useCallback((t: number) => { if (audioRef.current) audioRef.current.currentTime = t; setState((s) => ({ ...s, currentTime: t })); }, []);
+  const seek = useCallback((t: number) => { if (audioRef.current) audioRef.current.currentTime = t; lastReportedSec.current = Math.floor(t); setState((s) => ({ ...s, currentTime: t })); }, []);
   const setVolume = useCallback((v: number) => { if (audioRef.current) audioRef.current.volume = v; setState((s) => ({ ...s, volume: v })); try { localStorage.setItem('arsm-volume', String(v)); } catch {} }, []);
   const setRate = useCallback((r: number) => { if (audioRef.current) audioRef.current.playbackRate = r; setState((s) => ({ ...s, rate: r })); try { localStorage.setItem('arsm-rate', String(r)); } catch {} }, []);
   const setLoopMode = useCallback((m: 'off' | 'one' | 'all') => { setState((s) => ({ ...s, loopMode: m })); try { localStorage.setItem('arsm-loop', m); } catch {} }, []);
