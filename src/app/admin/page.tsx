@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { listProviders } from '@/lib/acquisition/registry';
 
 export default async function AdminPage() {
   const session = await auth();
@@ -12,6 +13,10 @@ export default async function AdminPage() {
     prisma.circle.count(),
   ]);
 
+  const providers = listProviders();
+  const canDownload = providers.filter(p => p.canDownload !== false).length;
+  const inspectOnly = providers.filter(p => p.canDownload === false).length;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
       <h1 className="text-2xl font-bold">管理面板</h1>
@@ -22,8 +27,8 @@ export default async function AdminPage() {
         <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">系统信息</h2>
         <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
           <div><span className="text-zinc-400">版本</span><p className="font-medium">v1.0 (Phase 10)</p></div>
-          <div><span className="text-zinc-400">数据库</span><p className="font-medium font-mono text-xs">arsm.db</p></div>
-          <div><span className="text-zinc-400">来源</span><p className="font-medium">2 (asmr.one + DLsite)</p></div>
+          <div><span className="text-zinc-400">数据库</span><p className="font-medium font-mono text-xs">SQLite (arsm.db)</p></div>
+          <div><span className="text-zinc-400">来源</span><p className="font-medium">{canDownload} 可下载{inspectOnly > 0 ? ` + ${inspectOnly} 元数据` : ''}</p></div>
           <div><span className="text-zinc-400">作品</span><p className="font-medium">{workCount}</p></div>
           <div><span className="text-zinc-400">曲目</span><p className="font-medium">{trackCount}</p></div>
           <div><span className="text-zinc-400">社团</span><p className="font-medium">{circleCount}</p></div>

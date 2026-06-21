@@ -11,7 +11,7 @@ export interface WorksQuery {
   userId?: string;
   minDurationMin?: number;
   maxDurationMin?: number;
-  sort?: 'recent' | 'title' | 'tracks' | 'duration';
+  sort?: 'recent' | 'title' | 'tracks' | 'duration' | 'recent_play';
   page?: number;
   pageSize?: number;
 }
@@ -55,7 +55,11 @@ export async function searchWorks(query: WorksQuery) {
 
   if (where.AND.length === 0) delete where.AND;
 
-  const orderBy: any = sort === 'title' ? { displayTitle: 'asc' } : sort === 'tracks' ? { trackCount: 'desc' } : sort === 'duration' ? { durationSec: 'desc' } : { updatedAt: 'desc' };
+  const orderBy: any = sort === 'title' ? { displayTitle: 'asc' }
+    : sort === 'tracks' ? { trackCount: 'desc' }
+    : sort === 'duration' ? { durationSec: 'desc' }
+    : sort === 'recent_play' ? { updatedAt: 'desc' } // fallback to updatedAt; listening recency from client
+    : { updatedAt: 'desc' };
 
   const [works, total] = await Promise.all([
     prisma.work.findMany({

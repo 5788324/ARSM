@@ -23,8 +23,9 @@ export default async function ContinueListeningPage() {
       uid,
     ) as Promise<Array<{ workId: string; cnt: number }>>,
     // Source stats
+    // Source stats — use correct SQLite table names
     (prisma as any).$queryRawUnsafe(
-      'SELECT COALESCE(ws.sourceName, w.sourceSite, "本地导入") as src, COUNT(*) as cnt FROM Work w LEFT JOIN WorkSource ws ON ws.workId = w.id GROUP BY src ORDER BY cnt DESC',
+      'SELECT "local" as src, COUNT(*) as cnt FROM works WHERE sourceSite IS NULL AND id NOT IN (SELECT workId FROM work_sources) UNION ALL SELECT sourceName as src, COUNT(*) as cnt FROM work_sources GROUP BY sourceName ORDER BY cnt DESC',
     ) as Promise<Array<{ src: string; cnt: number }>>,
     // Most-played tracks
     (prisma as any).$queryRawUnsafe(
@@ -68,6 +69,20 @@ export default async function ContinueListeningPage() {
           <p className="text-2xl font-bold">{fmtDur(totalPlaySec)}</p>
         </div>
       </div>
+
+      {sourceStats?.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold">来源分布</h2>
+          <div className="mt-2 flex flex-wrap gap-3">
+            {sourceStats.map((s: any) => (
+              <div key={s.src} className="rounded-xl border border-zinc-200 px-4 py-2 dark:border-zinc-800">
+                <span className="text-xs text-zinc-500">{s.src}</span>
+                <p className="text-lg font-bold">{s.cnt}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {topWorksAgg?.length > 0 && (
         <div className="mt-6">

@@ -194,6 +194,7 @@ model PlayLog {
   id        String   @id @default(cuid())
   userId    String
   workId    String
+  trackId   String?
   listenedSec Int    @default(0)
   createdAt DateTime @default(now())
 
