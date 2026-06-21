@@ -8,7 +8,7 @@ export default async function ContinueListeningPage() {
   if (!session) redirect('/login');
   const uid = session.user?.id || '';
 
-  const [history, totalRecords, distinctWorks, inProgress, totalSec, topWorksAgg] = await Promise.all([
+  const [history, totalRecords, playCount, distinctWorks, totalSec, topWorksAgg] = await Promise.all([
     prisma.listeningHistory.findMany({
       where: { userId: uid },
       orderBy: { listenedAt: 'desc' },
@@ -16,8 +16,8 @@ export default async function ContinueListeningPage() {
       include: { work: { include: { circle: true, _count: { select: { tracks: true } }, tracks: { orderBy: { trackNumber: 'asc' }, take: 1 } } } },
     }),
     prisma.listeningHistory.count({ where: { userId: uid } }),
+    (prisma as any).playLog.count({ where: { userId: uid } }) as Promise<number>,
     prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid } }).then(r => r.length),
-    prisma.listeningHistory.count({ where: { userId: uid, positionSec: { gt: 0 } } }),
     (prisma as any).playLog.aggregate({ where: { userId: uid }, _sum: { listenedSec: true } }).then((r: any) => r._sum?.listenedSec || 0) as Promise<number>,
     (prisma as any).playLog.groupBy({ by: ['workId'], where: { userId: uid }, _count: true, orderBy: { _count: { workId: 'desc' } }, take: 5 }) as Promise<any[]>,
   ]);
@@ -35,8 +35,8 @@ export default async function ContinueListeningPage() {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <p className="text-xs text-zinc-500">播放记录</p>
-          <p className="text-2xl font-bold">{totalRecords}</p>
+          <p className="text-xs text-zinc-500">播放次数</p>
+          <p className="text-2xl font-bold">{playCount}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
           <p className="text-xs text-zinc-500">收听作品</p>
