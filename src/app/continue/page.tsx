@@ -63,9 +63,10 @@ export default async function ContinueListeningPage() {
           <div className="mt-2 space-y-2">
             {topWorksAgg.map((agg: any) => {
               const title = topWorkMap.get(agg.workId) || agg.workId?.slice(-8);
+              const playCount = typeof agg._count === 'number' ? agg._count : agg._count?.workId ?? agg._count?._all ?? 0;
               return (
                 <div key={agg.workId} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
-                  <span className="text-xs font-bold text-zinc-500 w-6 text-center">{agg._count?.workId || agg._count?._all || 0}</span>
+                  <span className="text-xs font-bold text-zinc-500 w-6 text-center">{playCount}</span>
                   <span className="flex-1 text-sm truncate">{title}</span>
                 </div>
               );

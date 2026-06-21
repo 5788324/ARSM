@@ -11,7 +11,12 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3000.*LISTENING" 2^>nul') d
 
 if not exist logs mkdir logs
 
-call npx prisma db push --skip-generate 2>nul
+echo 同步数据库...
+call npx prisma db push --skip-generate
+if errorlevel 1 (
+  echo 数据库结构同步失败
+  goto :end
+)
 
 call node_modules\\.bin\\tsx.cmd prisma\\seed.ts 2>nul
 if errorlevel 1 (
