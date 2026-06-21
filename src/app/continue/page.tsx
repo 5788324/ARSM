@@ -22,6 +22,16 @@ export default async function ContinueListeningPage() {
   ]);
 
   const formatPosition = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  // Resolve top work titles via workId query
+  const topWorkIds = topWorksAgg?.map((a: any) => a.workId) || [];
+  const topWorkMap = new Map<string, string>();
+  if (topWorkIds.length > 0) {
+    const topWorks = await prisma.work.findMany({
+      where: { id: { in: topWorkIds } },
+      select: { id: true, displayTitle: true },
+    });
+    topWorks.forEach((w) => topWorkMap.set(w.id, w.displayTitle));
+  }
   const totalPlaySec = Number(totalSec) || 0;
   const fmtDur = (sec: number) => sec >= 3600 ? `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m` : `${Math.floor(sec / 60)}m`;
 
@@ -52,11 +62,11 @@ export default async function ContinueListeningPage() {
           <h2 className="text-lg font-semibold">最常播放</h2>
           <div className="mt-2 space-y-2">
             {topWorksAgg.map((agg: any) => {
-              const work = history.find((h) => h.workId === agg.workId)?.work;
+              const title = topWorkMap.get(agg.workId) || agg.workId?.slice(-8);
               return (
                 <div key={agg.workId} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
                   <span className="text-xs font-bold text-zinc-500 w-6 text-center">{agg._count}</span>
-                  <span className="flex-1 text-sm truncate">{work?.displayTitle || agg.workId?.slice(-8)}</span>
+                  <span className="flex-1 text-sm truncate">{title}</span>
                 </div>
               );
             })}

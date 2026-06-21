@@ -15,7 +15,10 @@ function WorksContent() {
   const [hasSubtitle, setHasSubtitle] = useState(sp.get('hasSubtitle') === 'true');
   const [minDur, setMinDur] = useState(sp.get('minDurationMin') || '');
   const [maxDur, setMaxDur] = useState(sp.get('maxDurationMin') || '');
-  const [showAdvanced, setShowAdvanced] = useState(sp.get('exclude') ? true : false);
+  const [circleFilter, setCircleFilter] = useState(sp.get('circleName') || '');
+  const [vaFilter, setVaFilter] = useState(sp.get('vaName') || '');
+  const [tagFilter, setTagFilter] = useState(sp.get('tagName') || '');
+  const [showAdvanced, setShowAdvanced] = useState(!!(sp.get('exclude') || sp.get('circleName') || sp.get('vaName') || sp.get('tagName')));
   const [works, setWorks] = useState<WorkCard[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(parseInt(sp.get('page') || '1'));
@@ -32,6 +35,9 @@ function WorksContent() {
     if (hasSubtitle) params.set('hasSubtitle', 'true');
     if (minDur) params.set('minDurationMin', minDur);
     if (maxDur) params.set('maxDurationMin', maxDur);
+    if (circleFilter) params.set('circleName', circleFilter);
+    if (vaFilter) params.set('vaName', vaFilter);
+    if (tagFilter) params.set('tagName', tagFilter);
     params.set('page', String(page));
     params.set('pageSize', '24');
 
@@ -39,7 +45,7 @@ function WorksContent() {
     const data = await res.json();
     if (data.ok) { setWorks(data.data.works); setTotal(data.data.total); setTotalPages(data.data.totalPages); }
     setLoading(false);
-  }, [keyword, exclude, sort, hasSubtitle, minDur, maxDur, page]);
+  }, [keyword, exclude, sort, hasSubtitle, minDur, maxDur, circleFilter, vaFilter, tagFilter, page]);
 
   useEffect(() => { fetchWorks(); }, [fetchWorks]);
 
@@ -53,10 +59,13 @@ function WorksContent() {
     if (hasSubtitle) params.set('hasSubtitle', 'true');
     if (minDur) params.set('minDurationMin', minDur);
     if (maxDur) params.set('maxDurationMin', maxDur);
+    if (circleFilter) params.set('circleName', circleFilter);
+    if (vaFilter) params.set('vaName', vaFilter);
+    if (tagFilter) params.set('tagName', tagFilter);
     if (page > 1) params.set('page', String(page));
     const qs = params.toString();
     router.replace(qs ? `/works?${qs}` : '/works', { scroll: false });
-  }, [keyword, exclude, sort, hasSubtitle, minDur, maxDur, page, router]);
+  }, [keyword, exclude, sort, hasSubtitle, minDur, maxDur, circleFilter, vaFilter, tagFilter, page, router]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -71,6 +80,7 @@ function WorksContent() {
           <option value="recent">最新导入</option>
           <option value="title">标题排序</option>
           <option value="tracks">曲目数</option>
+          <option value="duration">时长</option>
         </select>
         <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={hasSubtitle} onChange={(e) => { setHasSubtitle(e.target.checked); setPage(1); }} /> 带字幕</label>
         <button type="submit" className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900">搜索</button>

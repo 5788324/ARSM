@@ -11,8 +11,9 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3000.*LISTENING" 2^>nul') d
 
 if not exist logs mkdir logs
 
-echo ?????...
-call node_modules\.bin\tsx.cmd prisma\seed.ts 2>nul
+call npx prisma db push --skip-generate 2>nul
+
+call node_modules\\.bin\\tsx.cmd prisma\\seed.ts 2>nul
 if errorlevel 1 (
   echo ???????????
   goto :end
