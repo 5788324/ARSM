@@ -18,7 +18,8 @@ export default async function ContinueListeningPage() {
     (prisma as any).playLog.count({ where: { userId: uid } }) as Promise<number>,
     prisma.listeningHistory.groupBy({ by: ['workId'], where: { userId: uid } }).then(r => r.length),
     (prisma as any).playLog.aggregate({ where: { userId: uid }, _sum: { listenedSec: true } }).then((r: any) => r._sum?.listenedSec || 0) as Promise<number>,
-    (prisma as any).playLog.groupBy({ by: ['workId'], where: { userId: uid }, _count: true, orderBy: { _count: { workId: 'desc' } }, take: 5 }) as Promise<any[]>,
+    (prisma as any).playLog.groupBy({ by: ['workId'], where: { userId: uid }, _count: true, orderBy: { _count: { workId: 'desc' } }, take: 5 })
+      .then((r: any) => Array.isArray(r) ? r : (r?.data || r?.result || [])),
   ]);
 
   const formatPosition = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
@@ -63,10 +64,14 @@ export default async function ContinueListeningPage() {
           <div className="mt-2 space-y-2">
             {topWorksAgg.map((agg: any) => {
               const title = topWorkMap.get(agg.workId) || agg.workId?.slice(-8);
-              const playCount = typeof agg._count === 'number' ? agg._count : agg._count?.workId ?? agg._count?._all ?? 0;
+              // Prisma groupBy may return _count as number or {_all: N} depending on version
+              const pc = typeof agg._count === 'number' ? agg._count
+                : typeof agg._count === 'object' && agg._count !== null
+                  ? (agg._count._all || agg._count.workId || 0)
+                : 0;
               return (
                 <div key={agg.workId} className="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
-                  <span className="text-xs font-bold text-zinc-500 w-6 text-center">{playCount}</span>
+                  <span className="text-xs font-bold text-zinc-500 w-6 text-center">{pc}</span>
                   <span className="flex-1 text-sm truncate">{title}</span>
                 </div>
               );
