@@ -10,8 +10,12 @@ function WorksContent() {
   const sp = useSearchParams();
   const router = useRouter();
   const [keyword, setKeyword] = useState(sp.get('keyword') || '');
+  const [exclude, setExclude] = useState(sp.get('exclude') || '');
   const [sort, setSort] = useState(sp.get('sort') || 'recent');
   const [hasSubtitle, setHasSubtitle] = useState(sp.get('hasSubtitle') === 'true');
+  const [minDur, setMinDur] = useState(sp.get('minDurationMin') || '');
+  const [maxDur, setMaxDur] = useState(sp.get('maxDurationMin') || '');
+  const [showAdvanced, setShowAdvanced] = useState(sp.get('exclude') ? true : false);
   const [works, setWorks] = useState<WorkCard[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(parseInt(sp.get('page') || '1'));
@@ -23,8 +27,11 @@ function WorksContent() {
     setLoading(true);
     const params = new URLSearchParams();
     if (keyword) params.set('keyword', keyword);
+    if (exclude) params.set('exclude', exclude);
     if (sort !== 'recent') params.set('sort', sort);
     if (hasSubtitle) params.set('hasSubtitle', 'true');
+    if (minDur) params.set('minDurationMin', minDur);
+    if (maxDur) params.set('maxDurationMin', maxDur);
     params.set('page', String(page));
     params.set('pageSize', '24');
 
@@ -32,7 +39,7 @@ function WorksContent() {
     const data = await res.json();
     if (data.ok) { setWorks(data.data.works); setTotal(data.data.total); setTotalPages(data.data.totalPages); }
     setLoading(false);
-  }, [keyword, sort, hasSubtitle, page]);
+  }, [keyword, exclude, sort, hasSubtitle, minDur, maxDur, page]);
 
   useEffect(() => { fetchWorks(); }, [fetchWorks]);
 
@@ -41,12 +48,15 @@ function WorksContent() {
     if (!didMount.current) { didMount.current = true; return; }
     const params = new URLSearchParams();
     if (keyword) params.set('keyword', keyword);
+    if (exclude) params.set('exclude', exclude);
     if (sort !== 'recent') params.set('sort', sort);
     if (hasSubtitle) params.set('hasSubtitle', 'true');
+    if (minDur) params.set('minDurationMin', minDur);
+    if (maxDur) params.set('maxDurationMin', maxDur);
     if (page > 1) params.set('page', String(page));
     const qs = params.toString();
     router.replace(qs ? `/works?${qs}` : '/works', { scroll: false });
-  }, [keyword, sort, hasSubtitle, page, router]);
+  }, [keyword, exclude, sort, hasSubtitle, minDur, maxDur, page, router]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -64,7 +74,16 @@ function WorksContent() {
         </select>
         <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={hasSubtitle} onChange={(e) => { setHasSubtitle(e.target.checked); setPage(1); }} /> 带字幕</label>
         <button type="submit" className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900">搜索</button>
+        <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="rounded-lg border border-zinc-300 px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">{showAdvanced ? '收起' : '高级'}</button>
       </form>
+
+      {showAdvanced && (
+        <div className="flex flex-wrap gap-2 mb-6 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+          <input type="text" value={exclude} onChange={(e) => setExclude(e.target.value)} placeholder="排除词（如: 中出）" className="w-40 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
+          <input type="number" value={minDur} onChange={(e) => setMinDur(e.target.value)} placeholder="最低时长(分)" className="w-32 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
+          <input type="number" value={maxDur} onChange={(e) => setMaxDur(e.target.value)} placeholder="最高时长(分)" className="w-32 rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800" />
+        </div>
+      )}
 
       {loading ? <p className="text-zinc-500">加载中...</p> : works.length === 0 ? (
         <div className="mt-16 text-center"><p className="text-lg text-zinc-500">没有找到匹配的作品。</p></div>

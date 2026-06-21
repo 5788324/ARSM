@@ -9,15 +9,17 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const query = {
     keyword: url.searchParams.get('keyword') || undefined,
-    circleId: url.searchParams.get('circleId') || undefined,
-    vaId: url.searchParams.get('vaId') || undefined,
-    tagId: url.searchParams.get('tagId') || undefined,
+    exclude: url.searchParams.get('exclude') || undefined,
+    circleName: url.searchParams.get('circleName') || undefined,
+    vaName: url.searchParams.get('vaName') || undefined,
+    tagName: url.searchParams.get('tagName') || undefined,
     hasSubtitle: url.searchParams.get('hasSubtitle') === 'true' || undefined,
-    favorite: url.searchParams.get('favorite') === 'true' || undefined,
+    minDurationMin: url.searchParams.get('minDurationMin') ? parseInt(url.searchParams.get('minDurationMin')!) : undefined,
+    maxDurationMin: url.searchParams.get('maxDurationMin') ? parseInt(url.searchParams.get('maxDurationMin')!) : undefined,
     userId: session.user?.id,
     sort: (url.searchParams.get('sort') as any) || 'recent',
     page: parseInt(url.searchParams.get('page') || '1'),
-    pageSize: parseInt(url.searchParams.get('pageSize') || '20'),
+    pageSize: parseInt(url.searchParams.get('pageSize') || '24'),
   };
 
   const result = await searchWorks(query);
